@@ -1,0 +1,2 @@
+### 1. Ver la lista de repartidores
+GET http://localhost:8080/api/repartidores

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Vehículo - Ares Express</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+    <!-- Barra Lateral (Sidebar con Submenús Desplegables) -->
+    <aside class="w-72 bg-[#0d1527] text-white flex flex-col justify-between p-6 shadow-lg">
+        <div class="space-y-6">
+            <!-- Logo / Título -->
+            <div>
+                <h1 class="text-2xl font-bold tracking-wide text-white">Ares Express</h1>
+                <p class="text-xs text-gray-400 mt-0.5">Admin Panel</p>
+            </div>
+
+            <!-- Menú de Navegación -->
+            <nav class="space-y-2">
+                <!-- 1. Panel General -->
+                <a href="Interfaz_Administrador.html" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span>Panel General</span>
+                </a>
+
+                <!-- 2. Menú Desplegable: Flota y Pilotos (Activo / Abierto) -->
+                <div class="space-y-1">
+                    <button onclick="toggleSubmenu('submenu-pilotos', 'icon-pilotos')" class="w-full flex items-center justify-between px-4 py-3 bg-[#f97316] text-white rounded-xl font-medium shadow-md transition">
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="truck" class="w-5 h-5"></i>
+                            <span class="font-medium">Flota y Pilotos</span>
+                        </div>
+                        <i id="icon-pilotos" data-lucide="chevron-down" class="w-4 h-4 transform rotate-180 transition-transform duration-200"></i>
+                    </button>
+                    <!-- Submenú Pilotos / Flota -->
+                    <div id="submenu-pilotos" class="pl-11 space-y-1 py-1">
+                        <a href="Registrar_Vehiculo.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Registrar Vehículo</a>
+                        <a href="Editar_Vehiculo.html" class="block py-2 text-xs text-white font-semibold transition">Editar Vehículo</a>
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Dar de baja Vehículo</a>
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Registrar piloto</a>
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Historial pilotos</a>
+                    </div>
+                </div>
+
+                <!-- 3. Menú Desplegable: Clientes -->
+                <div class="space-y-1">
+                    <button onclick="toggleSubmenu('submenu-clientes', 'icon-clientes')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                            <span class="font-medium">Clientes</span>
+                        </div>
+                        <i id="icon-clientes" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                    </button>
+                    <div id="submenu-clientes" class="hidden pl-11 space-y-1 py-1">
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Vetar cliente</a>
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Historial cliente</a>
+                    </div>
+                </div>
+
+                <!-- 4. Menú Desplegable: Comercios -->
+                <div class="space-y-1">
+                    <button onclick="toggleSubmenu('submenu-comercios', 'icon-comercios')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="store" class="w-5 h-5"></i>
+                            <span class="font-medium">Comercios</span>
+                        </div>
+                        <i id="icon-comercios" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                    </button>
+                    <div id="submenu-comercios" class="hidden pl-11 space-y-1 py-1">
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Registrar Nuevo comercio</a>
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Editar comercio</a>
+                        <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Editar Menús</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Botón de Cerrar Sesión -->
+        <div>
+            <a href="Login.html" class="flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <div class="flex-1 flex flex-col">
+
+        <!-- Header Superior -->
+        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 shadow-sm">
+            <div class="flex items-center space-x-4">
+                <a href="Interfaz_Administrador.html" class="text-gray-400 hover:text-[#f97316] transition flex items-center gap-1 text-sm font-medium">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Panel
+                </a>
+                <span class="text-gray-300">|</span>
+                <h2 class="text-lg font-semibold text-gray-800">Gestión de Flota - Editar Vehículo</h2>
+            </div>
+            <div class="text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                Administrador General
+            </div>
+        </header>
+
+        <!-- Contenedor Principal del Formulario -->
+        <main class="p-8 max-w-4xl w-full mx-auto space-y-6">
+
+            <!-- Buscador de Vehículo por Placa -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex items-center justify-between gap-4">
+                <div class="flex items-center space-x-3 flex-1">
+                    <div class="bg-orange-50 text-[#f97316] p-2.5 rounded-xl">
+                        <i data-lucide="search" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Seleccionar o Buscar Unidad</label>
+                        <select id="selectVehiculoBusqueda" onchange="cargarDatosVehiculo()" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition bg-white">
+                            <option value="" disabled selected>Seleccione un vehículo registrado...</option>
+                            <!-- Se llenará dinámicamente desde el backend -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Edición -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 space-y-6">
+
+                <!-- Encabezado -->
+                <div class="flex items-center space-x-4 border-b border-gray-100 pb-5">
+                    <div class="bg-indigo-50 text-indigo-600 p-3 rounded-2xl">
+                        <i data-lucide="edit-3" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">Actualizar Datos de Unidad</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Modifique la información técnica del vehículo seleccionado.</p>
+                    </div>
+                </div>
+
+                <!-- Formulario -->
+                <form id="form-editar-vehiculo" onsubmit="actualizarVehiculo(event)" class="space-y-6">
+
+                    <!-- ID oculto para la actualización -->
+                    <input type="hidden" id="vehiculoId">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <!-- Placa / Identificador -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Placa del Vehículo *</label>
+                            <input type="text" id="placa" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition bg-gray-50">
+                        </div>
+
+                        <!-- Tipo de Vehículo -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Tipo de Vehículo *</label>
+                            <select id="tipoVehiculo" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition bg-white">
+                                <option value="" disabled>Seleccione el tipo</option>
+                                <option value="MOTO">Moto</option>
+                                <option value="CAMION_COMERCIAL">Camión comercial</option>
+                                <option value="CARRO_COMERCIAL">Carro comercial</option>
+                                <option value="RASTRA">Rastra</option>
+                                <option value="CABEZAL">Cabezal</option>
+                                <option value="CAMION_PEQUENO">Camión Pequeño</option>
+                            </select>
+                        </div>
+
+                        <!-- Marca -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Marca *</label>
+                            <input type="text" id="marca" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition">
+                        </div>
+
+                        <!-- Línea -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Línea *</label>
+                            <input type="text" id="linea" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition">
+                        </div>
+
+                        <!-- Modelo / Año -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Modelo / Año *</label>
+                            <input type="number" id="modelo" min="1990" max="2027" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition">
+                        </div>
+
+                        <!-- Color -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Color *</label>
+                            <input type="text" id="color" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition">
+                        </div>
+
+                        <!-- Cilindrada (CC) -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Cilindrada (CC) *</label>
+                            <input type="number" id="cilindrada" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition">
+                        </div>
+
+                        <!-- Chasis / VIN -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Chasis / VIN *</label>
+                            <input type="text" id="chasisVin" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition uppercase">
+                        </div>
+
+                        <!-- Capacidad de Carga (kg) -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Capacidad de Carga Aproximada (kg)</label>
+                            <input type="number" id="capacidad" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition">
+                        </div>
+
+                    </div>
+
+                    <!-- Asignación de Repartidor -->
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="user-check" class="w-5 h-5 text-teal-600"></i>
+                            <h4 class="text-sm font-bold text-gray-800">Repartidor Asignado</h4>
+                        </div>
+                        <select id="repartidorAsignado" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#f97316] focus:ring-2 focus:ring-orange-100 outline-none text-sm transition bg-white">
+                            <option value="">Sin asignar por el momento</option>
+                        </select>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex justify-end items-center space-x-4 pt-4 border-t border-gray-100">
+                        <a href="Interfaz_Administrador.html" class="px-6 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="px-6 py-3 bg-[#f97316] hover:bg-orange-600 text-white rounded-xl text-sm font-bold shadow-md transition flex items-center space-x-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>Actualizar Vehículo</span>
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Script de integración y lógica frontend -->
+    <script>
+        lucide.createIcons();
+
+        function toggleSubmenu(submenuId, iconId) {
+            const submenu = document.getElementById(submenuId);
+            const icon = document.getElementById(iconId);
+            submenu.classList.toggle('hidden');
+            icon.style.transform = submenu.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        // Al cargar la página, cargamos la lista de vehículos y de repartidores
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarVehiculosSelect();
+            cargarRepartidoresSelect();
+        });
+
+        let listaVehiculosCache = [];
+
+
+        //cargar vehiculos de base de datos.
+        async function cargarVehiculosSelect() {
+    try {
+        const response = await fetch('/api/vehiculos');
+        if (response.ok) {
+            listaVehiculosCache = await response.json();
+            const select = document.getElementById('selectVehiculoBusqueda');
+
+            // Mantener la opción por defecto
+            select.innerHTML = '<option value="" disabled selected>Seleccione un vehículo registrado...</option>';
+
+            // Recorrer los vehículos reales de la base de datos
+            listaVehiculosCache.forEach(v => {
+                const option = document.createElement('option');
+                option.value = v.id;
+                // Muestra la placa, marca y línea para identificarlo fácilmente
+                option.textContent = `Placa: ${v.placa} - ${v.marca} ${v.linea} (${v.tipoVehiculo})`;
+                select.appendChild(option);
+            });
+        } else {
+            console.error('No se pudo obtener la lista de vehículos del servidor.');
+        }
+    } catch (error) {
+        console.error('Error de red al intentar cargar los vehículos:', error);
+    }
+}
+
+
+        async function cargarRepartidoresSelect() {
+            try {
+                const response = await fetch('/api/repartidores');
+                if (response.ok) {
+                    const repartidores = await response.json();
+                    const select = document.getElementById('repartidorAsignado');
+                    select.innerHTML = '<option value="">Sin asignar por el momento</option>';
+                    repartidores.forEach(rep => {
+                        const option = document.createElement('option');
+                        option.value = rep.id;
+                        option.textContent = `${rep.nombre} ${rep.apellido} - Repartidor #${rep.id}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar repartidores:', error);
+            }
+        }
+
+        // Al seleccionar un vehículo del buscador superior, rellenar el formulario
+        function cargarDatosVehiculo() {
+            const idSeleccionado = document.getElementById('selectVehiculoBusqueda').value;
+            const vehiculo = listaVehiculosCache.find(v => v.id == idSeleccionado);
+
+            if (vehiculo) {
+                document.getElementById('vehiculoId').value = vehiculo.id;
+                document.getElementById('placa').value = vehiculo.placa;
+                document.getElementById('tipoVehiculo').value = vehiculo.tipoVehiculo;
+                document.getElementById('marca').value = vehiculo.marca;
+                document.getElementById('linea').value = vehiculo.linea;
+                document.getElementById('modelo').value = vehiculo.modelo;
+                document.getElementById('color').value = vehiculo.color;
+                document.getElementById('cilindrada').value = vehiculo.cilindrada;
+                document.getElementById('chasisVin').value = vehiculo.chasisVin;
+                document.getElementById('capacidad').value = vehiculo.capacidadKg || '';
+
+                if (vehiculo.repartidor) {
+                    document.getElementById('repartidorAsignado').value = vehiculo.repartidor.id;
+                } else {
+                    document.getElementById('repartidorAsignado').value = "";
+                }
+            }
+        }
+
+        // Enviar cambios al backend mediante PUT o POST
+        async function actualizarVehiculo(event) {
+            event.preventDefault();
+            const id = document.getElementById('vehiculoId').value;
+
+            if (!id) {
+                alert('Por favor, seleccione primero un vehículo para editar.');
+                return;
+            }
+
+            const datosVehiculo = {
+                placa: document.getElementById('placa').value,
+                tipoVehiculo: document.getElementById('tipoVehiculo').value,
+                marca: document.getElementById('marca').value,
+                linea: document.getElementById('linea').value,
+                modelo: parseInt(document.getElementById('modelo').value),
+                color: document.getElementById('color').value,
+                cilindrada: parseInt(document.getElementById('cilindrada').value),
+                chasisVin: document.getElementById('chasisVin').value,
+                capacidadKg: document.getElementById('capacidad').value ? parseFloat(document.getElementById('capacidad').value) : null,
+                repartidorId: document.getElementById('repartidorAsignado').value ? parseInt(document.getElementById('repartidorAsignado').value) : null
+            };
+
+            try {
+                const response = await fetch(`/api/vehiculos/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosVehiculo)
+                });
+
+                if (response.ok) {
+                    alert('¡Vehículo actualizado exitosamente!');
+                    window.location.href = 'Interfaz_Administrador.html';
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error al actualizar el vehículo: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        }
+    </script>
+</body>
+</html>

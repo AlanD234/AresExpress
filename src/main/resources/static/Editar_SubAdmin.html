@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ares Express - Editar SubAdministrador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+<!-- Barra lateral unificada -->
+<aside class="w-64 bg-slate-900 text-white flex flex-col justify-between p-6">
+    <div>
+        <h1 class="text-2xl font-bold mb-2">Ares Express</h1>
+        <p class="text-xs text-slate-400 mb-8">Admin Panel</p>
+
+        <nav class="space-y-3">
+            <a href="/Interfaz_Administrador.html" class="block py-2.5 px-4 rounded hover:bg-slate-800">Panel General</a>
+
+            <!-- Sección Agrupada: Seguridad y Accesos -->
+            <div class="pt-2">
+                <div class="py-2.5 px-4 text-slate-400 font-semibold text-sm flex items-center justify-between">
+                    <span>Seguridad y Accesos</span>
+                </div>
+                <div class="pl-4 space-y-1 mt-1 border-l border-slate-800 ml-2">
+                    <a href="/Vetar_SubAdmin.html" class="block py-2 px-3 rounded text-sm hover:bg-slate-800 text-slate-300">Dar de Baja SubAdmin</a>
+                    <a href="/Editar_SubAdmin.html" class="block py-2 px-3 rounded text-sm bg-orange-600 text-white font-semibold">Editar SubAdmin</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div>
+        <button onclick="localStorage.clear(); window.location.href='/Login.html';" class="text-red-400 hover:text-red-300 text-sm flex items-center gap-2">Cerrar Sesión</button>
+    </div>
+</aside>
+
+<!-- Contenido Principal -->
+<main class="flex-1 p-10 overflow-y-auto">
+    <header class="flex justify-between items-center mb-8">
+        <div class="flex items-center gap-3">
+            <a href="/Interfaz_Administrador.html" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
+                ← Volver al Panel
+            </a>
+            <span class="text-slate-300">|</span>
+            <h2 class="text-xl font-bold text-slate-800">Gestión de Accesos - Editar SubAdministrador</h2>
+        </div>
+        <span class="bg-white px-4 py-2 rounded-full shadow text-sm font-medium text-slate-700">Administrador General</span>
+    </header>
+
+    <!-- Selector de SubAdministrador -->
+    <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Seleccionar o Buscar SubAdministrador</label>
+        <select id="selectSubAdmin" class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="">Seleccione un subadministrador registrado...</option>
+        </select>
+    </div>
+
+    <!-- Formulario de Edición -->
+    <div class="bg-white p-8 rounded-xl shadow-md">
+        <h3 class="text-lg font-bold text-slate-800 mb-1">Actualizar Datos de SubAdministrador</h3>
+        <p class="text-sm text-slate-500 mb-6">Modifique la información del perfil seleccionado.</p>
+
+        <form id="formEditarSubAdmin" class="space-y-6">
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Nombre Completo *</label>
+                    <input type="text" id="nombre" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Correo Electrónico *</label>
+                    <input type="email" id="correo" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Nueva Contraseña (Opcional)</label>
+                <input type="password" id="password" placeholder="Dejar en blanco para mantener la actual" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+            </div>
+
+            <div class="flex justify-end gap-4 pt-4">
+                <button type="button" onclick="window.location.reload();" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">Cancelar</button>
+                <button type="submit" class="px-6 py-2.5 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 shadow">Actualizar SubAdministrador</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<!-- Script de lógica Frontend -->
+<script>
+    const correoAdminActual = localStorage.getItem('adminCorreo');
+    let listaSubAdminsGlobal = [];
+
+    async function cargarSubAdmins() {
+        try {
+            const response = await fetch(`/api/admin/subadmins?correoAdminActual=${encodeURIComponent(correoAdminActual)}`);
+            if (response.ok) {
+                listaSubAdminsGlobal = await response.json();
+                const select = document.getElementById('selectSubAdmin');
+
+                listaSubAdminsGlobal.forEach(sub => {
+                    const opt = document.createElement('option');
+                    opt.value = sub.id;
+                    opt.textContent = `${sub.nombre} (${sub.correo})`;
+                    select.appendChild(opt);
+                });
+            }
+        } catch (error) {
+            console.error('Error al cargar subadministradores:', error);
+        }
+    }
+
+    // Al seleccionar un subadmin del desplegable, rellenar el formulario automáticamente
+    document.getElementById('selectSubAdmin').addEventListener('change', (e) => {
+        const idSeleccionado = e.target.value;
+        const subEncontrado = listaSubAdminsGlobal.find(s => s.id == idSeleccionado);
+
+        if (subEncontrado) {
+            document.getElementById('nombre').value = subEncontrado.nombre;
+            document.getElementById('correo').value = subEncontrado.correo;
+            document.getElementById('password').value = ''; // Contraseña limpia por seguridad
+        } else {
+            document.getElementById('nombre').value = '';
+            document.getElementById('correo').value = '';
+            document.getElementById('password').value = '';
+        }
+    });
+
+    // Enviar la actualización al backend
+    document.getElementById('formEditarSubAdmin').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const idSeleccionado = document.getElementById('selectSubAdmin').value;
+
+        if (!idSeleccionado) {
+            alert('Por favor, seleccione un subadministrador de la lista.');
+            return;
+        }
+
+        const datosActualizados = {
+            nombre: document.getElementById('nombre').value,
+            correo: document.getElementById('correo').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            const response = await fetch(`/api/admin/subadmin/${idSeleccionado}?correoAdminActual=${encodeURIComponent(correoAdminActual)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosActualizados)
+            });
+
+            const resultado = await response.json();
+            if (response.ok) {
+                alert(resultado.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + resultado.message);
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            alert('No se pudo conectar con el servidor.');
+        }
+    });
+
+    cargarSubAdmins();
+</script>
+</body>
+</html>

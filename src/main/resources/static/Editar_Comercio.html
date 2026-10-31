@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Editar Comercio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- SIDEBAR IZQUIERDO (Idéntico a tu panel principal) -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
+            <div>
+                <!-- Logo / Título -->
+                <div class="p-6">
+                    <h1 class="text-xl font-bold tracking-wide">Ares Express</h1>
+                    <p class="text-xs text-gray-400 mt-1">Admin Panel</p>
+                </div>
+
+                <!-- Menú de Navegación -->
+                <nav class="mt-4 px-4 space-y-1">
+                    <a href="Interfaz_Administrador.html" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-slate-800 rounded-xl transition-colors">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        Panel General
+                    </a>
+                    
+                    <!-- Sección Comercios Activa -->
+                    <div class="pt-2">
+                        <a href="#" class="flex items-center justify-between px-4 py-3 text-sm font-semibold text-white bg-orange-600 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="store" class="w-5 h-5"></i>
+                                Comercios
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </a>
+                        <div class="pl-11 pr-4 py-2 space-y-1 text-xs text-gray-300">
+                            <a href="Registrar_Comercio.html" class="block py-2 hover:text-white transition-colors">Registrar Comercio</a>
+                            <a href="Editar_Comercio.html" class="block py-2 text-orange-400 font-medium">Editar Comercio</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- CONTENEDOR PRINCIPAL -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- BARRA SUPERIOR -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                    <a href="Interfaz_Administrador.html" class="text-xs font-semibold text-gray-500 hover:text-orange-600 transition-colors flex items-center gap-1">
+                        ← Volver al Panel
+                    </a>
+                    <span class="text-gray-300">|</span>
+                    <h2 class="text-sm font-bold text-gray-800 tracking-wide uppercase">Gestión de Comercios - Editar Comercio</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-lg">Administrador General</span>
+                </div>
+            </header>
+
+            <!-- CONTENIDO DE LA PÁGINA -->
+            <main class="p-8 max-w-5xl mx-auto w-full space-y-6">
+                
+                <!-- 1. TARJETA DE SELECCIÓN DE COMERCIO -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4 text-orange-600"></i>
+                        Seleccionar o buscar comercio
+                    </label>
+                    <select id="selectComercio" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                        <option value="" disabled selected>Seleccione un comercio registrado...</option>
+                    </select>
+                </div>
+
+                <!-- 2. TARJETA DE FORMULARIO DE EDICIÓN -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                        <div class="p-3 bg-orange-50 text-orange-600 rounded-xl">
+                            <i data-lucide="file-pen-line" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800">Actualizar Datos del Comercio</h3>
+                            <p class="text-xs text-gray-500">Modifique la información comercial, fiscal o logística del socio seleccionado.</p>
+                        </div>
+                    </div>
+
+                    <form id="formEditarComercio" onsubmit="actualizarComercio(event)" class="space-y-8">
+                        
+                        <!-- SECCIÓN 1: DATOS COMERCIALES -->
+                        <div>
+                            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="building-2" class="w-4 h-4"></i> Datos Comerciales y Generales
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">NOMBRE COMERCIAL *</label>
+                                    <input type="text" id="nombre" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">CATEGORÍA O GIRO *</label>
+                                    <select id="categoria" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="Restaurante">Restaurante</option>
+                                        <option value="Local comida rápida">Local comida rápida</option>
+                                        <option value="Local comida casera">Local comida casera</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: INFORMACIÓN FISCAL -->
+                        <div>
+                            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="receipt" class="w-4 h-4"></i> Información Fiscal y Facturación
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">RAZÓN SOCIAL *</label>
+                                    <input type="text" id="razonSocial" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">NIT *</label>
+                                    <input type="text" id="nit" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">RÉGIMEN DE ISR *</label>
+                                    <select id="regimenIsr" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="Opcional Simplificado">Opcional Simplificado</option>
+                                        <option value="Sobre Utilidades">Sobre Utilidades</option>
+                                        <option value="Pequeño Contribuyente">Pequeño Contribuyente (5%)</option>
+                                        <option value="Exento">Exento</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">¿AGENTE RETENEDOR DE IVA? *</label>
+                                    <select id="agenteRetenedorIva" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="false">No</option>
+                                        <option value="true">Sí</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: LOGÍSTICA Y CONTACTO -->
+                        <div>
+                            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i> Punto de Recolección y Contacto
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">PERSONA DE CONTACTO *</label>
+                                    <input type="text" id="contactoPersona" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">TELÉFONO *</label>
+                                    <input type="tel" id="telefono" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-2">DIRECCIÓN EXACTA *</label>
+                                <textarea id="direccion" rows="3" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 4: HORARIOS Y LOGO -->
+                        <div>
+                            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="clock" class="w-4 h-4"></i> Horarios e Identidad
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">DÍAS DE OPERACIÓN *</label>
+                                    <select id="diasOperacion" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="Lunes a Viernes">Lunes a Viernes</option>
+                                        <option value="Lunes a Sábado">Lunes a Sábado</option>
+                                        <option value="Todos los días">Todos los días</option>
+                                        <option value="Fines de Semana">Fines de Semana</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">HORA APERTURA *</label>
+                                    <input type="time" id="horaApertura" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">HORA CIERRE *</label>
+                                    <input type="time" id="horaCierre" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-2">NUEVO LOGO DE LA EMPRESA (Opcional)</label>
+                                <input type="file" id="logoFile" accept="image/*" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                            </div>
+                        </div>
+
+                        <!-- BOTÓN DE ACCIÓN -->
+                        <div class="flex justify-end gap-4 pt-4 border-t border-gray-100">
+                            <button type="submit" class="px-6 py-3 bg-orange-600 text-white font-semibold text-sm rounded-xl hover:bg-orange-700 transition-colors shadow-sm">
+                                Actualizar Comercio
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE FUNCIONALIDAD -->
+    <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+
+        let comerciosGlobal = [];
+        let comercioSeleccionadoId = null;
+
+        // 1. Cargar la lista de comercios al abrir la página para llenar el selector superior
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/comercios');
+                if (response.ok) {
+                    comerciosGlobal = await response.json();
+                    const select = document.getElementById('selectComercio');
+                    
+                    comerciosGlobal.forEach(c => {
+                        const option = document.createElement('option');
+                        option.value = c.id;
+                        option.textContent = `${c.nombre} (NIT: ${c.nit || 'CF'}) - ${c.categoria || 'General'}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("Error al cargar la lista de comercios:", error);
+            }
+        });
+
+        // 2. Al seleccionar un comercio del desplegable, rellenar automáticamente los inputs
+        document.getElementById('selectComercio').addEventListener('change', (e) => {
+            const idSeleccionado = Number(e.target.value);
+            const comercio = comerciosGlobal.find(c => c.id === idSeleccionado);
+            
+            if (comercio) {
+                comercioSeleccionadoId = comercio.id;
+                document.getElementById('nombre').value = comercio.nombre || '';
+                document.getElementById('categoria').value = comercio.categoria || '';
+                document.getElementById('razonSocial').value = comercio.razonSocial || '';
+                document.getElementById('nit').value = comercio.nit || '';
+                document.getElementById('regimenIsr').value = comercio.regimenIsr || '';
+                document.getElementById('agenteRetenedorIva').value = comercio.agenteRetenedorIva ? "true" : "false";
+                document.getElementById('contactoPersona').value = comercio.contactoPersona || '';
+                document.getElementById('telefono').value = comercio.telefono || '';
+                document.getElementById('direccion').value = comercio.direccion || '';
+                document.getElementById('diasOperacion').value = comercio.diasOperacion || '';
+                document.getElementById('horaApertura').value = comercio.horaApertura || '';
+                document.getElementById('horaCierre').value = comercio.horaCierre || '';
+            }
+        });
+
+        // 3. Enviar la actualización al backend mediante FormData (PUT o POST según tu controlador)
+        async function actualizarComercio(event) {
+            event.preventDefault();
+
+            if (!comercioSeleccionadoId) {
+                alert("Por favor, seleccione un comercio primero.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('nombre', document.getElementById('nombre').value);
+            formData.append('categoria', document.getElementById('categoria').value);
+            formData.append('razonSocial', document.getElementById('razonSocial').value);
+            formData.append('nit', document.getElementById('nit').value);
+            formData.append('regimenIsr', document.getElementById('regimenIsr').value);
+            formData.append('agenteRetenedorIva', document.getElementById('agenteRetenedorIva').value === 'true');
+            formData.append('contactoPersona', document.getElementById('contactoPersona').value);
+            formData.append('telefono', document.getElementById('telefono').value);
+            formData.append('direccion', document.getElementById('direccion').value);
+            formData.append('diasOperacion', document.getElementById('diasOperacion').value);
+            formData.append('horaApertura', document.getElementById('horaApertura').value);
+            formData.append('horaCierre', document.getElementById('horaCierre').value);
+            formData.append('abierto', true);
+
+            const logoInput = document.getElementById('logoFile');
+            if (logoInput.files.length > 0) {
+                formData.append('logo', logoInput.files[0]);
+            }
+
+            try {
+                // Endpoint para actualizar (puedes ajustarlo a PUT /api/comercios/{id} si lo creas en tu backend)
+                const response = await fetch(`http://localhost:8080/api/comercios/${comercioSeleccionadoId}`, {
+                    method: 'PUT', // O 'POST' si manejas la actualización con POST
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert("¡Comercio actualizado exitosamente!");
+                    window.location.reload();
+                } else {
+                    alert("Error al actualizar el comercio en el servidor.");
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                alert("No se pudo conectar con el backend.");
+            }
+        }
+    </script>
+</body>
+</html>

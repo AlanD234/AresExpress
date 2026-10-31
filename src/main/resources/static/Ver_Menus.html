@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Menú del Comercio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden font-sans">
+
+    <!-- Sidebar lateral de administración -->
+    <aside class="w-64 bg-[#0f172a] text-white flex flex-col justify-between p-6">
+        <div class="space-y-8">
+            <div>
+                <h1 class="text-2xl font-black tracking-tight text-white">Ares Express</h1>
+                <p class="text-xs text-slate-400">Admin Panel</p>
+            </div>
+            
+            <nav class="space-y-1 text-sm font-medium">
+                <a href="Interfaz_Administrator.html" class="flex items-center space-x-3 text-slate-300 hover:bg-slate-800 p-3 rounded-xl transition">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span>Panel General</span>
+                </a>
+                <div class="pt-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Gestión de Catálogo</div>
+                <a href="Menus.html" class="flex items-center space-x-3 bg-[#f97316] text-white p-3 rounded-xl transition font-semibold shadow-md">
+                    <i data-lucide="utensils" class="w-5 h-5"></i>
+                    <span>Editar Menús</span>
+                </a>
+            </nav>
+        </div>
+
+        <button onclick="window.location.href='login.html'" class="flex items-center space-x-2 text-rose-400 hover:text-rose-300 text-sm font-medium transition">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span>Cerrar Sesión</span>
+        </button>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <div class="flex-1 flex flex-col overflow-y-auto">
+        
+        <!-- Header Superior -->
+        <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
+            <div class="text-xs text-gray-500 font-medium flex items-center space-x-2">
+                <a href="Menus.html" class="hover:underline text-[#f97316] font-bold flex items-center">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5 mr-1"></i> Volver a Comercios
+                </a>
+                <span>|</span>
+                <span class="text-gray-800 font-bold" id="header-nombre-comercio">Gestión de Menú</span>
+            </div>
+            <div class="px-3 py-1 bg-gray-100 rounded-lg text-xs font-semibold text-gray-600">
+                Administrador General
+            </div>
+        </header>
+
+        <!-- Área de Contenido -->
+        <main class="p-8 max-w-7xl w-full mx-auto space-y-6">
+
+            <!-- Banner con el nombre del comercio y botón de Agregar -->
+            <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-orange-50 text-[#f97316] rounded-2xl flex items-center justify-center border border-orange-100">
+                        <i data-lucide="utensils-crossed" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800" id="titulo-comercio">Cargando menú...</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Administre los platillos, precios y elementos disponibles para este establecimiento.</p>
+                    </div>
+                </div>
+                <button onclick="abrirModalProducto()" class="inline-flex items-center space-x-2 bg-[#f97316] hover:bg-orange-600 text-white font-bold text-xs px-5 py-3 rounded-xl transition shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Crear Nuevo Platillo</span>
+                </button>
+            </div>
+
+            <!-- Grilla / Contenedor de Productos del Menú -->
+            <div id="grid-productos-menu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Se llenará dinámicamente -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center col-span-full py-12 text-gray-400">
+                    Cargando elementos del menú...
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal para Crear / Agregar Platillo -->
+<div id="modal-producto" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-gray-100">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 class="text-lg font-bold text-gray-800">Agregar Platillo al Menú</h3>
+            <button onclick="cerrarModalProducto()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="form-nuevo-producto" onsubmit="guardarProducto(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">Nombre del Platillo / Producto</label>
+                <input type="text" id="input-nombre-prod" required class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#f97316] outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">Descripción</label>
+                <textarea id="input-desc-prod" rows="2" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#f97316] outline-none" placeholder="Ingredientes o detalles..."></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">Precio (Q)</label>
+                <input type="number" step="0.01" id="input-precio-prod" required class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#f97316] outline-none">
+            </div>
+
+            <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">Imagen del Menú</label>
+            <input type="file" id="input-imagen-prod" accept="image/*" class="w-full border border-gray-300 rounded-xl p-2 text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-[#f97316] hover:file:bg-orange-100">
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-2">
+                <button type="button" onclick="cerrarModalProducto()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl">Cancelar</button>
+                <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[#f97316] hover:bg-orange-600 rounded-xl shadow-sm">Guardar Platillo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <!-- Script de Gestión del Menú -->
+<script>
+    const comercioId = localStorage.getItem('comercioMenuId');
+    const comercioNombre = localStorage.getItem('comercioMenuNombre');
+
+    if (!comercioId) {
+        window.location.href = 'Menus.html';
+    } else {
+        document.getElementById('header-nombre-comercio').innerText = `Menú: ${comercioNombre}`;
+        document.getElementById('titulo-comercio').innerText = `Menú de ${comercioNombre}`;
+        cargarMenuComercio();
+    }
+
+    // 1 funcion para eliminar menus 
+    async function eliminarProducto(id) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este platillo?")) {
+        return; // Si el usuario cancela, no hacemos nada
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/menus/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert("Platillo eliminado exitosamente.");
+            cargarMenuComercio(); // Recarga la grilla para que desaparezca de la pantalla
+        } else {
+            alert("Error al intentar eliminar el platillo.");
+        }
+    } catch (error) {
+        console.error("Error de red:", error);
+        alert("No se pudo conectar con el servidor.");
+    }
+}
+
+    // 2. Función para cargar los menús desde la base de datos
+    async function cargarMenuComercio() {
+    const contenedor = document.getElementById('grid-productos-menu');
+    contenedor.innerHTML = `<div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center col-span-full py-12 text-gray-400">Cargando menú desde la base de datos...</div>`;
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/menus/comercio/${comercioId}`);
+        
+        if (!response.ok) {
+            throw new Error('No se pudo obtener el menú del servidor.');
+        }
+
+        const productos = await response.json();
+        contenedor.innerHTML = '';
+
+        if (!productos || productos.length === 0) {
+            contenedor.innerHTML = `
+                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center col-span-full py-12 text-gray-400">
+                    <p class="font-bold text-gray-600">Este comercio aún no tiene platillos registrados.</p>
+                    <p class="text-xs text-gray-400 mt-1">Usa el botón "Crear Nuevo Platillo" para agregar el primero.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Pintamos cada platillo real que viene de la base de datos con sus botones
+        productos.forEach(prod => {
+            const imagenHtml = prod.imagenUrl 
+                ? `<img src="${prod.imagenUrl}" alt="${prod.nombre}" class="w-full h-36 object-cover rounded-xl mb-3">` 
+                : `<div class="w-full h-36 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 mb-3"><i data-lucide="image" class="w-8 h-8"></i></div>`;
+
+            contenedor.innerHTML += `
+                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between space-y-4 hover:border-[#f97316] transition">
+                    <div>
+                        ${imagenHtml}
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-gray-800 text-base">${prod.nombre}</h3>
+                            <span class="text-xs font-bold px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full">Activo</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">${prod.descripcion || 'Sin descripción disponible.'}</p>
+                        <p class="text-xl font-extrabold text-[#f97316] mt-3">Q${Number(prod.precio).toFixed(2)}</p>
+                    </div>
+                    
+                    <!-- Pie de tarjeta con Editar y Eliminar -->
+                    <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+                        <button onclick="abrirModalEditar(${prod.id}, '${prod.nombre}', '${prod.descripcion || ''}', ${prod.precio})" class="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Editar
+                        </button>
+                        <button onclick="eliminarProducto(${prod.id})" class="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Refrescar iconos de Lucide si los usas dinámicamente
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        contenedor.innerHTML = `<div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center col-span-full py-12 text-rose-500">Error al cargar los platillos del servidor.</div>`;
+    }
+}
+
+    // 3. funcion para guardar menus 
+   async function guardarProducto(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById('input-nombre-prod').value;
+    const descripcion = document.getElementById('input-desc-prod').value;
+    const precio = document.getElementById('input-precio-prod').value;
+    const imagenInput = document.getElementById('input-imagen-prod');
+    const idComercioActual = localStorage.getItem('comercioMenuId');
+
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('descripcion', descripcion);
+    formData.append('precio', precio);
+    formData.append('comercioId', idComercioActual);
+
+    if (imagenInput && imagenInput.files.length > 0) {
+        formData.append('imagen', imagenInput.files[0]);
+    }
+
+    // Determinamos si es una edición (PUT) o una creación (POST)
+    const idEditando = window.idPlatilloEditando;
+    const url = idEditando 
+        ? `http://localhost:8080/api/menus/${idEditando}` 
+        : 'http://localhost:8080/api/menus';
+    const method = idEditando ? 'PUT' : 'POST';
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            body: formData
+        });
+
+        if (response.ok) {
+            alert(idEditando ? "Platillo actualizado exitosamente." : `Platillo "${nombre}" guardado exitosamente.`);
+            cerrarModalProducto();
+            document.getElementById('form-nuevo-producto').reset();
+            
+            // Limpiamos la variable de edición para que el próximo registro sea limpio
+            window.idPlatilloEditando = null; 
+            
+            cargarMenuComercio(); 
+        } else {
+            alert('Error al guardar el platillo en el servidor.');
+        }
+    } catch (error) {
+        console.error('Error de red:', error);
+        alert('No se pudo conectar con el servidor.');
+    }
+}
+
+    // 4. Controladores del Modal
+    function abrirModalProducto() {
+        document.getElementById('modal-producto').classList.remove('hidden');
+        document.getElementById('modal-producto').classList.add('flex');
+    }
+
+    function cerrarModalProducto() {
+        document.getElementById('modal-producto').classList.add('hidden');
+        document.getElementById('modal-producto').classList.remove('flex');
+    }
+
+    // 5. editar platillos 
+    function abrirModalEditar(id, nombre, descripcion, precio) {
+    // Aquí puedes reutilizar tu modal actual cambiando el título o cargando los valores
+    // Por ejemplo, si guardas temporalmente el ID que se está editando:
+    window.idPlatilloEditando = id;
+    
+    document.getElementById('input-nombre-prod').value = nombre;
+    document.getElementById('input-desc-prod').value = descripcion;
+    document.getElementById('input-precio-prod').value = precio;
+    
+    // Y abres tu modal de forma habitual
+    const modal = document.getElementById('modal-producto');
+    if(modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}  
+</script>
+    </script>
+</body>
+</html>

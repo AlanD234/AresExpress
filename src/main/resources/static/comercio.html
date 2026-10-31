@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Selección de Comercios</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col font-sans relative overflow-x-hidden">
+
+<!-- Overlay del Carrito / Sidebar -->
+<div id="cart-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="toggleCart()"></div>
+
+<!-- Header Principal -->
+<header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 md:px-8 shadow-sm">
+    <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center text-[#f97316]">
+            <i data-lucide="zap" class="w-6 h-6"></i>
+        </div>
+        <div>
+            <h1 class="text-lg md:text-xl font-bold text-gray-800 tracking-wide">Ares Express - Comercios</h1>
+            <span id="saludo-usuario" class="text-xs font-semibold text-[#f97316]">Cargando sesión...</span>
+        </div>
+    </div>
+
+    <div class="flex items-center space-x-3 md:space-x-4">
+        <!-- Botón del Carrito -->
+        <button onclick="toggleCart()" class="flex items-center space-x-2 px-4 py-2 bg-orange-50 border border-orange-200 text-[#f97316] font-semibold rounded-xl hover:bg-[#f97316] hover:text-white transition text-sm shadow-sm">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            <span>Carrito (<span id="cart-count">0</span>)</span>
+        </button>
+
+        <!-- Enlace para ir al Mapa -->
+        <a id="enlace-retorno" href="cliente.html" class="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-200 transition text-sm flex items-center space-x-1">
+            <i data-lucide="map-pin" class="w-4 h-4"></i>
+            <span>Ver Mis Pedidos y Mapa</span>
+        </a>
+
+        <!-- Cerrar Sesión -->
+        <a href="Login.html" onclick="localStorage.clear()" class="text-sm font-medium text-red-500 hover:bg-red-50 px-3 py-2 rounded-xl transition flex items-center space-x-1">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Cerrar Sesión</span>
+        </a>
+    </div>
+</header>
+
+<!-- Contenido Principal -->
+<main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8">
+
+    <!-- Sección de Selección de Comercios -->
+    <section class="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-sm">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center space-x-2">
+                <i data-lucide="store" class="w-6 h-6 text-[#f97316]"></i>
+                <span>Establecimientos Disponibles en Amatitlán</span>
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">Elige un comercio para desplegar su menú de productos y armar tu pedido.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="lista-comercios">
+            <p class="text-sm text-gray-400">Cargando comercios desde el servidor...</p>
+        </div>
+    </section>
+
+    <!-- Sección de Menú de Productos -->
+    <section id="menu-seccion" class="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-sm hidden">
+        <div class="mb-6 border-b border-gray-100 pb-4">
+            <h2 id="titulo-comercio-menu" class="text-2xl font-bold text-gray-800 flex items-center space-x-2">
+                <i data-lucide="utensils" class="w-6 h-6 text-[#f97316]"></i>
+                <span>Menú</span>
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="lista-productos-menu"></div>
+    </section>
+
+</main>
+
+<!-- Panel Lateral Deslizante del Carrito -->
+<div id="cartDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white border-l border-gray-200 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col p-6">
+    <div class="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center space-x-2">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-[#f97316]"></i>
+            <span>Mi Carrito</span>
+        </h2>
+        <button onclick="toggleCart()" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <div id="cart-items" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
+        <p class="text-sm text-gray-400">El carrito está vacío.</p>
+    </div>
+
+    <div class="border-t border-gray-200 pt-4 space-y-4 overflow-y-auto max-h-[60vh]">
+
+        <!-- Selección de Vehículo / Repartidor -->
+        <div class="bg-orange-50/70 p-3 rounded-xl border border-orange-200 space-y-2">
+            <h3 class="text-xs font-bold text-[#f97316] uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="truck" class="w-4 h-4"></i> Tipo de Vehículo para Envío *
+            </h3>
+            <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="seleccionarTipoVehiculo('MOTO')" id="btn-vehiculo-MOTO" class="p-2 border border-orange-300 rounded-xl bg-white text-xs font-bold text-gray-700 flex flex-col items-center justify-center hover:bg-orange-100 transition shadow-sm">
+                    <i data-lucide="bike" class="w-5 h-5 mb-1 text-[#f97316]"></i>
+                    <span>Moto</span>
+                </button>
+                <button type="button" onclick="seleccionarTipoVehiculo('AUTOMOVIL')" id="btn-vehiculo-AUTOMOVIL" class="p-2 border border-gray-200 rounded-xl bg-white text-xs font-bold text-gray-700 flex flex-col items-center justify-center hover:bg-orange-100 transition shadow-sm">
+                    <i data-lucide="car" class="w-5 h-5 mb-1 text-[#f97316]"></i>
+                    <span>Auto</span>
+                </button>
+                <button type="button" onclick="seleccionarTipoVehiculo('BICICLETA')" id="btn-vehiculo-BICICLETA" class="p-2 border border-gray-200 rounded-xl bg-white text-xs font-bold text-gray-700 flex flex-col items-center justify-center hover:bg-orange-100 transition shadow-sm">
+                    <i data-lucide="compass" class="w-5 h-5 mb-1 text-[#f97316]"></i>
+                    <span>Bicicleta</span>
+                </button>
+            </div>
+            <div class="text-[11px] text-gray-600 flex justify-between pt-1 border-t border-orange-200/50">
+                <span>Costo de Envío Estimado:</span>
+                <strong id="monto-envio-label" class="text-[#f97316]">Q20.50</strong>
+            </div>
+        </div>
+
+        <!-- Datos de Facturación (NIT y Nombre) -->
+        <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-3">
+            <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">📄 Datos de Facturación</h3>
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 mb-1">Nombre o Razón Social</label>
+                <input type="text" id="nombreFactura" placeholder="Ej. Juan Pérez" class="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#f97316]">
+            </div>
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 mb-1">NIT</label>
+                <input type="text" id="nitCliente" placeholder="Ej. 1234567-8 o CF" value="CF" class="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#f97316]">
+            </div>
+        </div>
+
+        <!-- Desglose de Totales -->
+        <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-1 text-xs">
+            <div class="flex justify-between text-gray-600">
+                <span>Subtotal Productos:</span>
+                <span>Q<span id="cart-subtotal">0.00</span></span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+                <span>Costo Envío:</span>
+                <span>Q<span id="cart-envio">20.50</span></span>
+            </div>
+            <div class="flex justify-between items-center text-sm font-bold text-gray-800 pt-2 border-t border-gray-200">
+                <span>Total a Pagar:</span>
+                <span class="text-[#f97316]">Q<span id="cart-total">0.00</span></span>
+            </div>
+        </div>
+
+        <!-- Selector de Cliente (Solo Administradores) -->
+        <div id="seccion-cliente-admin" class="hidden bg-orange-50 p-3 rounded-xl border border-orange-200">
+            <label class="block text-xs font-semibold text-[#f97316] uppercase tracking-wider mb-1">👤 Seleccionar Cliente para el Pedido *</label>
+            <select id="selectClienteAdmin" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                <option value="">Cargando clientes...</option>
+            </select>
+        </div>
+
+        <!-- Opciones de Pago -->
+        <div class="space-y-2">
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-orange-50/50 transition">
+                <input type="radio" name="pago" value="EFECTIVO" checked class="text-[#f97316] focus:ring-[#f97316]">
+                <span class="text-sm font-medium text-gray-700">💵 Efectivo contra entrega</span>
+            </label>
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-orange-50/50 transition">
+                <input type="radio" name="pago" value="TARJETA_GUARDADA" class="text-[#f97316] focus:ring-[#f97316]">
+                <span class="text-sm font-medium text-gray-700">💳 Tarjeta Guardada en Perfil</span>
+            </label>
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-orange-50/50 transition">
+                <input type="radio" name="pago" value="TARJETA_DATAFONO" class="text-[#f97316] focus:ring-[#f97316]">
+                <span class="text-sm font-medium text-gray-700">📱 Tarjeta con Datáfono al Llegar</span>
+            </label>
+        </div>
+
+        <button onclick="confirmarPedidoAPI()" class="w-full py-3 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold rounded-xl shadow-md transition text-sm">
+            Confirmar y Enviar Pedido
+        </button>
+    </div>
+</div>
+
+<script>
+    const API_COMERCIOS = 'http://localhost:8080/api/comercios';
+    const API_PEDIDOS = 'http://localhost:8080/api/pedidos';
+    const API_MENUS = 'http://localhost:8080/api/menus';
+
+    let carrito = [];
+    let contadorUnidades = {};
+    let comercioSeleccionadoId = 1;
+    let nombreComercioActual = '';
+    let clienteActualId = null;
+
+    let tipoVehiculoSeleccionado = 'MOTO';
+    const distanciaKmEstimada = 3.5;
+
+    function calcularCostoEnvio(tipo, distancia = distanciaKmEstimada) {
+        if (tipo === 'AUTOMOVIL') {
+            return 20.0 + (distancia * 5.0);
+        } else if (tipo === 'BICICLETA') {
+            return 5.0 + (distancia * 2.0);
+        }
+        return 10.0 + (distancia * 3.0);
+    }
+
+    function seleccionarTipoVehiculo(tipo) {
+        tipoVehiculoSeleccionado = tipo;
+        ['MOTO', 'AUTOMOVIL', 'BICICLETA'].forEach(t => {
+            const btn = document.getElementById(`btn-vehiculo-${t}`);
+            if (btn) {
+                if (t === tipo) {
+                    btn.classList.add('border-orange-500', 'bg-orange-50', 'ring-2', 'ring-orange-400');
+                    btn.classList.remove('border-gray-200');
+                } else {
+                    btn.classList.remove('border-orange-500', 'bg-orange-50', 'ring-2', 'ring-orange-400');
+                    btn.classList.add('border-gray-200');
+                }
+            }
+        });
+        actualizarUIcarrito();
+    }
+
+    const correoUsuario = localStorage.getItem('correo');
+    const rolActual = (localStorage.getItem('rol') || '').toLowerCase();
+    const nombreUsuario = localStorage.getItem('nombre');
+
+    if (!correoUsuario) {
+        alert('Debe iniciar sesión para continuar.');
+        window.location.href = 'Login.html';
+    }
+
+    if (nombreUsuario) {
+        const esAdmin = rolActual.includes('admin') || rolActual.includes('subadmin');
+        document.getElementById('saludo-usuario').innerText = esAdmin
+            ? `👑 ${nombreUsuario} (Administrador)`
+            : `👋 Hola, ${nombreUsuario}`;
+
+        const inputNombreFac = document.getElementById('nombreFactura');
+        if (inputNombreFac) inputNombreFac.value = nombreUsuario;
+
+        if (esAdmin) {
+            const enlaceRetorno = document.getElementById('enlace-retorno');
+            if (enlaceRetorno) {
+                enlaceRetorno.href = 'Interfaz_Administrador.html';
+                enlaceRetorno.innerHTML = '<i data-lucide="arrow-left" class="w-4 h-4"></i><span>Volver al Panel Admin</span>';
+            }
+        }
+    }
+
+    async function obtenerDatosClienteActual() {
+        try {
+            if (rolActual.includes('admin') || rolActual.includes('subadmin')) {
+                document.getElementById('seccion-cliente-admin').classList.remove('hidden');
+                const responseClientes = await fetch('http://localhost:8080/api/clientes');
+                if (responseClientes.ok) {
+                    const clientes = await responseClientes.json();
+                    const select = document.getElementById('selectClienteAdmin');
+                    select.innerHTML = '';
+
+                    if (clientes && clientes.length > 0) {
+                        clientes.forEach(cli => {
+                            select.innerHTML += `<option value="${cli.id}">${cli.nombre} (${cli.correo})</option>`;
+                        });
+                        clienteActualId = select.value;
+                    } else {
+                        select.innerHTML = '<option value="11">Uso Administrativo (ID 11)</option>';
+                        clienteActualId = 11;
+                    }
+                    select.onchange = (e) => { clienteActualId = e.target.value; };
+                }
+                return;
+            }
+
+            const response = await fetch(`http://localhost:8080/api/clientes/buscar?correo=${encodeURIComponent(correoUsuario)}`);
+            if (response.ok) {
+                const cliente = await response.json();
+                clienteActualId = cliente.id;
+            } else {
+                clienteActualId = 11;
+            }
+        } catch (error) {
+            console.error('Error al obtener datos del cliente:', error);
+            clienteActualId = 11;
+        }
+    }
+
+    async function cargarComercios() {
+        await obtenerDatosClienteActual();
+        try {
+            const response = await fetch(API_COMERCIOS);
+            const comercios = await response.json();
+            const contenedor = document.getElementById('lista-comercios');
+            contenedor.innerHTML = '';
+
+            if (!comercios || comercios.length === 0) {
+                contenedor.innerHTML = '<p class="text-sm text-gray-400">No hay comercios disponibles.</p>';
+                return;
+            }
+
+            comercios.forEach(c => {
+                const estadoBadge = c.abierto
+                    ? '<span class="px-2.5 py-1 text-xs font-bold bg-green-100 text-green-700 rounded-full border border-green-200">🟢 Abierto</span>'
+                    : '<span class="px-2.5 py-1 text-xs font-bold bg-red-100 text-red-700 rounded-full border border-red-200">🔴 Cerrado</span>';
+
+                const urlLogo = c.logoUrl ? `http://localhost:8080${c.logoUrl}` : 'https://via.placeholder.com/150';
+
+                contenedor.innerHTML += `
+                    <div onclick="verMenuComercio(${c.id}, '${c.nombre}')" class="p-6 bg-white border border-gray-200 hover:border-[#f97316] hover:shadow-md rounded-2xl transition cursor-pointer group text-center space-y-3">
+                        <div class="w-20 h-20 mx-auto rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <img src="${urlLogo}" alt="Logo de ${c.nombre}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-[#f97316] transition">${c.nombre}</h3>
+                        <p class="text-xs text-gray-500">Categoría: ${c.categoria || 'General'}</p>
+                        <div>${estadoBadge}</div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error al conectar con la API de comercios:', error);
+            document.getElementById('lista-comercios').innerHTML = '<p class="text-sm text-red-500">Error al conectar con la API de comercios</p>';
+        }
+    }
+
+    async function verMenuComercio(idComercio, nombreComercio) {
+        comercioSeleccionadoId = idComercio;
+        nombreComercioActual = nombreComercio;
+
+        const menuSeccion = document.getElementById('menu-seccion');
+        menuSeccion.classList.remove('hidden');
+        document.getElementById('titulo-comercio-menu').innerHTML = `<i data-lucide="utensils" class="w-6 h-6 text-[#f97316]"></i><span>Menú de: ${nombreComercio}</span>`;
+
+        const contenedorMenu = document.getElementById('lista-productos-menu');
+        contenedorMenu.innerHTML = '<p class="text-sm text-gray-400 col-span-full">Cargando menú del comercio...</p>';
+
+        try {
+            const response = await fetch(`${API_MENUS}/comercio/${idComercio}`);
+            if (response.ok) {
+                const productos = await response.json();
+                contenedorMenu.innerHTML = '';
+
+                if (!productos || productos.length === 0) {
+                    contenedorMenu.innerHTML = '<p class="text-sm text-gray-400 col-span-full">No hay platillos disponibles para este comercio.</p>';
+                    return;
+                }
+
+                productos.forEach(prod => {
+                    if (contadorUnidades[prod.id] === undefined) {
+                        contadorUnidades[prod.id] = 1;
+                    }
+
+                    const imgProdUrl = prod.imagenUrl ? `http://localhost:8080${prod.imagenUrl}` : 'https://via.placeholder.com/150';
+
+                    contenedorMenu.innerHTML += `
+                        <div class="p-5 bg-gray-50 border border-gray-200 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:border-[#f97316] transition">
+                            <div>
+                                <div class="w-full h-36 rounded-xl overflow-hidden bg-white border border-gray-200 mb-3 flex items-center justify-center">
+                                    <img src="${imgProdUrl}" alt="${prod.nombre}" class="w-full h-full object-cover">
+                                </div>
+                                <h3 class="font-bold text-gray-800 text-base">${prod.nombre}</h3>
+                                <p class="text-xs text-gray-500 mt-1">${prod.descripcion || ''}</p>
+                                <p class="text-lg font-extrabold text-[#f97316] mt-2">Q${prod.precio.toFixed(2)}</p>
+
+                                <div class="flex items-center justify-center space-x-3 my-4">
+                                    <button onclick="modificarContadorTarjeta(${prod.id}, -1)" class="w-8 h-8 rounded-lg bg-white border border-gray-200 hover:bg-orange-50 hover:text-[#f97316] text-gray-700 font-bold transition flex items-center justify-center shadow-sm">-</button>
+                                    <span id="cant-tarjeta-${prod.id}" class="font-bold text-gray-800 text-lg">${contadorUnidades[prod.id]}</span>
+                                    <button onclick="modificarContadorTarjeta(${prod.id}, 1)" class="w-8 h-8 rounded-lg bg-white border border-gray-200 hover:bg-orange-50 hover:text-[#f97316] text-gray-700 font-bold transition flex items-center justify-center shadow-sm">+</button>
+                                </div>
+                            </div>
+
+                            <button onclick="agregarAlCarritoConfirmado('${prod.nombre}', ${prod.precio}, ${prod.id})" class="w-full py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl transition text-sm shadow-md">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+            } else {
+                contenedorMenu.innerHTML = '<p class="text-sm text-red-500 col-span-full">Error al cargar el menú desde el servidor.</p>';
+            }
+        } catch (error) {
+            console.error('Error al obtener menú del comercio:', error);
+            contenedorMenu.innerHTML = '<p class="text-sm text-red-500 col-span-full">No se pudo conectar con la API de menús.</p>';
+        }
+    }
+
+    function modificarContadorTarjeta(idProducto, delta) {
+        if (!contadorUnidades[idProducto]) contadorUnidades[idProducto] = 1;
+        contadorUnidades[idProducto] += delta;
+        if (contadorUnidades[idProducto] < 1) contadorUnidades[idProducto] = 1;
+
+        const spanElem = document.getElementById(`cant-tarjeta-${idProducto}`);
+        if (spanElem) spanElem.innerText = contadorUnidades[idProducto];
+    }
+
+    function agregarAlCarritoConfirmado(nombre, precio, idProducto) {
+        const cantidadAAgregar = contadorUnidades[idProducto] || 1;
+        const existe = carrito.find(item => item.nombre === nombre);
+
+        if (existe) {
+            existe.cantidad += cantidadAAgregar;
+        } else {
+            carrito.push({ nombre, precio, cantidad: cantidadAAgregar });
+        }
+
+        actualizarUIcarrito();
+        toggleCart();
+    }
+
+    function toggleCart() {
+        const drawer = document.getElementById('cartDrawer');
+        const overlay = document.getElementById('cart-overlay');
+        drawer.classList.toggle('translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
+
+    function actualizarUIcarrito() {
+        const contenedor = document.getElementById('cart-items');
+        contenedor.innerHTML = '';
+        let subtotal = 0;
+        let count = 0;
+
+        const costoEnvio = calcularCostoEnvio(tipoVehiculoSeleccionado);
+        document.getElementById('monto-envio-label').innerText = `Q${costoEnvio.toFixed(2)}`;
+        document.getElementById('cart-envio').innerText = costoEnvio.toFixed(2);
+
+        if (carrito.length === 0) {
+            contenedor.innerHTML = '<p class="text-sm text-gray-400">El carrito está vacío.</p>';
+            document.getElementById('cart-subtotal').innerText = '0.00';
+            document.getElementById('cart-total').innerText = '0.00';
+            document.getElementById('cart-count').innerText = '0';
+            return;
+        }
+
+        carrito.forEach((item, index) => {
+            subtotal += item.precio * item.cantidad;
+            count += item.cantidad;
+            contenedor.innerHTML += `
+                <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm shadow-sm">
+                    <div>
+                        <strong class="text-gray-800">${item.nombre}</strong><br>
+                        <small class="text-gray-500">Q${item.precio.toFixed(2)} x ${item.cantidad}</small>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="font-bold text-[#f97316]">Q${(item.precio * item.cantidad).toFixed(2)}</span>
+                        <button onclick="eliminarDelCarrito(${index})" class="text-red-500 hover:text-red-700 p-1 rounded-lg transition">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        const totalFinal = subtotal + costoEnvio;
+        document.getElementById('cart-subtotal').innerText = subtotal.toFixed(2);
+        document.getElementById('cart-total').innerText = totalFinal.toFixed(2);
+        document.getElementById('cart-count').innerText = count;
+        lucide.createIcons();
+    }
+
+    function eliminarDelCarrito(index) {
+        carrito.splice(index, 1);
+        actualizarUIcarrito();
+    }
+
+    async function confirmarPedidoAPI() {
+        if (carrito.length === 0) {
+            alert('El carrito está vacío.');
+            return;
+        }
+
+        const idClienteFinal = clienteActualId ? parseInt(clienteActualId) : 11;
+
+        const metodoPago = document.querySelector('input[name="pago"]:checked').value;
+        const nombreFactura = document.getElementById('nombreFactura').value.trim() || 'Consumidor Final';
+        const nitCliente = document.getElementById('nitCliente').value.trim() || 'CF';
+
+        const costoEnvio = calcularCostoEnvio(tipoVehiculoSeleccionado);
+        const subtotalProductos = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+        const totalFinal = subtotalProductos + costoEnvio;
+
+        const descripcionTexto = carrito.map(i => `${i.cantidad}x ${i.nombre}`).join(', ') + ` [Pago: ${metodoPago}]`;
+
+        const nuevoPedido = {
+            descripcion: descripcionTexto,
+            estado: "PENDIENTE",
+            total: totalFinal,
+            costoEnvio: costoEnvio,
+            tipoVehiculo: tipoVehiculoSeleccionado,
+            cliente: { id: idClienteFinal },
+            comercio: { id: comercioSeleccionadoId },
+            nombreFactura: nombreFactura,
+            nitCliente: nitCliente,
+            repartidor: null
+        };
+
+        try {
+            const response = await fetch(API_PEDIDOS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoPedido)
+            });
+
+            if (response.ok) {
+                alert('¡Pedido confirmado con éxito! Redirigiendo al seguimiento...');
+                carrito = [];
+                actualizarUIcarrito();
+                toggleCart();
+                window.location.href = 'cliente.html';
+            } else {
+                const errorData = await response.json();
+                alert('Error del servidor: ' + (errorData.error || 'Desconocido'));
+                console.error("Detalle del error:", errorData);
+            }
+        } catch (error) {
+            console.error('Error de red:', error);
+            alert('No se pudo conectar con la API de pedidos.');
+        }
+    }
+
+    window.onload = function() {
+        seleccionarTipoVehiculo('MOTO');
+        cargarComercios();
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Tracking y Facturación</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        #map {
+            width: 100%;
+            height: 350px;
+            border-radius: 0.75rem;
+            z-index: 10 !important;
+        }
+        .leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-pane, .leaflet-overlay-pane {
+            z-index: 20 !important;
+        }
+        .leaflet-control, .leaflet-top, .leaflet-bottom {
+            z-index: 30 !important;
+        }
+        .star-rating { color: #d1d5db; cursor: pointer; transition: color 0.2s; }
+        .star-rating.active { color: #f59e0b; }
+        @media print {
+            body * { visibility: hidden; }
+            #modal-factura, #modal-factura * { visibility: visible; }
+            #modal-factura { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col font-sans relative overflow-x-hidden">
+
+<!-- Overlay de la barra lateral -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="toggleSidebar()"></div>
+
+<!-- Barra Lateral (Historial de Entregas) -->
+<aside id="sidebar" class="fixed top-0 left-0 h-full w-80 bg-white border-r border-gray-200 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col p-6">
+    <div class="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
+        <h2 class="text-lg font-bold text-gray-800 flex items-center space-x-2">
+            <i data-lucide="history" class="w-5 h-5 text-[#f97316]"></i>
+            <span>Historial Entregados</span>
+        </h2>
+        <button onclick="toggleSidebar()" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+    </div>
+    <div id="lista-historial" class="flex-1 overflow-y-auto space-y-3 pr-1">
+        <p class="text-sm text-gray-400">Cargando historial...</p>
+    </div>
+</aside>
+
+<!-- Header Principal -->
+<header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 md:px-8 shadow-sm">
+    <div class="flex items-center space-x-3">
+        <button onclick="toggleSidebar()" class="p-2 bg-orange-50 border border-orange-200 text-[#f97316] rounded-xl hover:bg-[#f97316] hover:text-white transition flex items-center space-x-1 text-sm font-semibold shadow-sm">
+            <i data-lucide="menu" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Historial</span>
+        </button>
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center text-[#f97316]">
+                <i data-lucide="map-pin" class="w-6 h-6"></i>
+            </div>
+            <h1 class="text-base md:text-xl font-bold text-gray-800 tracking-wide">Ares Express - Tracking (Amatitlán)</h1>
+        </div>
+    </div>
+
+    <div class="flex items-center space-x-3 md:space-x-4">
+        <span id="saludo-usuario" class="text-xs md:text-sm font-semibold text-[#f97316]">👋 Cliente</span>
+
+        <a id="enlace-retorno" href="comercio.html" class="px-4 py-2 bg-orange-50 border border-orange-200 text-[#f97316] font-semibold rounded-xl hover:bg-[#f97316] hover:text-white transition text-sm flex items-center space-x-1 shadow-sm">
+            <i data-lucide="store" class="w-4 h-4"></i>
+            <span>Volver a Comercios</span>
+        </a>
+
+        <a href="Login.html" onclick="localStorage.clear()" class="text-sm font-medium text-red-500 hover:bg-red-50 px-3 py-2 rounded-xl transition flex items-center space-x-1">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Cerrar Sesión</span>
+        </a>
+    </div>
+</header>
+
+<!-- Contenido Principal -->
+<main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <!-- Panel Izquierdo: Pedidos Activos -->
+    <section class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center space-x-2">
+                <i data-lucide="package" class="w-5 h-5 text-[#f97316]"></i>
+                <span>Pedidos En Curso</span>
+            </h2>
+            <button onclick="cargarPedidos()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-orange-50 hover:text-[#f97316] transition flex items-center space-x-1">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Actualizar</span>
+            </button>
+        </div>
+
+        <div id="lista-pedidos-activos" class="flex-1 overflow-y-auto space-y-3 max-h-[420px] pr-1">
+            <p class="text-sm text-gray-400">Cargando pedidos activos...</p>
+        </div>
+    </section>
+
+    <!-- Panel Derecho: Mapa y Simulación Controlada -->
+    <section class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col">
+        <div class="mb-4 pb-3 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center space-x-2">
+                <i data-lucide="navigation" class="w-5 h-5 text-[#f97316]"></i>
+                <span>Ruta del Repartidor (Amatitlán)</span>
+            </h2>
+            <p id="map-instructions" class="text-xs text-gray-500 mt-0.5">Selecciona un pedido activo para visualizar la ruta vial en Amatitlán.</p>
+        </div>
+
+        <div id="map" class="mb-4 shadow-inner"></div>
+
+        <div>
+            <button id="btn-simular" onclick="simularRecorridoAnimado()" disabled class="w-full py-2.5 bg-gray-300 text-gray-500 font-bold rounded-xl transition text-sm cursor-not-allowed">
+                Selecciona un pedido aceptado en camino...
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<!-- Modal de Facturación FEL -->
+<div id="modal-factura" class="fixed inset-0 bg-black/70 z-[9999] hidden items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 md:p-8 text-gray-800 relative z-[10000]">
+        <div class="text-center border-b-2 border-[#f97316] pb-4 mb-4">
+            <h2 class="text-lg font-bold text-[#f97316]">DOCUMENTO TRIBUTARIO ELECTRÓNICO (FEL)</h2>
+            <p id="fac-emisor-nombre" class="text-xs font-bold text-gray-700 mt-1">Comercio Emisor</p>
+            <p class="text-xs text-gray-500">NIT Emisor: <span id="fac-emisor-nit">CF</span> | Serie: 3B29A10X</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">Plataforma de entrega: <b>Ares Express Logistics</b></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-xs bg-gray-50 p-4 rounded-xl mb-4 border border-gray-200">
+            <div>
+                <strong>Número de Pedido:</strong> <span id="fac-pedido-id">#0</span><br>
+                <strong>Fecha de Emisión:</strong> <span id="fac-fecha">--/--/----</span><br>
+                <strong>Estado:</strong> <span class="text-green-600 font-bold">CERTIFICADO / ENTREGADO</span>
+            </div>
+            <div>
+                <strong>Nombre / Razón Social:</strong> <span id="fac-cliente-nombre">Consumidor Final</span><br>
+                <strong>NIT Receptor:</strong> <span id="fac-cliente-nit">CF</span><br>
+                <strong>Lugar:</strong> Amatitlán, Guatemala
+            </div>
+        </div>
+
+        <table class="w-full text-sm mb-4 border-collapse">
+            <thead>
+            <tr class="bg-orange-50 text-[#f97316] border-b border-orange-200">
+                <th class="p-2 text-left">Concepto / Producto</th>
+                <th class="p-2 text-right">Monto</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="border-b border-gray-100">
+                <td id="fac-descripcion" class="p-2 text-gray-700">Detalle del producto...</td>
+                <td id="fac-subtotal" class="p-2 text-right font-bold text-gray-800">Q0.00</td>
+            </tr>
+            <tr class="border-b border-gray-100 bg-orange-50/30">
+                <td class="p-2 text-gray-700 flex items-center gap-2">
+                    <i data-lucide="truck" class="w-4 h-4 text-[#f97316]"></i>
+                    <span>Servicio de Logística y Envío</span>
+                    <span id="fac-tipo-vehiculo" class="text-[10px] bg-orange-100 text-[#f97316] font-bold px-1.5 py-0.5 rounded uppercase">MOTO</span>
+                </td>
+                <td id="fac-envio" class="p-2 text-right font-bold text-[#f97316]">Q0.00</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="text-right text-base font-bold text-[#f97316] mb-6">
+            TOTAL FACTURADO: <span id="fac-total">Q0.00</span>
+        </div>
+
+        <div class="no-print flex items-center justify-between border-t border-gray-200 pt-4">
+            <button onclick="cerrarModalFactura()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl text-sm transition">Cerrar</button>
+            <button onclick="window.print()" class="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl text-sm shadow-md transition">Imprimir / Guardar como PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Calificación con Estrellas (Promedio / Feedback) -->
+<div id="modal-calificacion" class="fixed inset-0 bg-black/70 z-[9999] hidden items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl p-6 text-center space-y-4 shadow-2xl relative">
+        <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto border border-amber-200">
+            <i data-lucide="star" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-800">Califica el Servicio del Repartidor</h3>
+        <p class="text-xs text-gray-500">Tu opinión ayuda a mantener la calidad de entrega en Ares Express (Amatitlán).</p>
+
+        <div class="flex justify-center space-x-2 text-3xl my-3">
+            <span class="star-rating active" onclick="setRating(1)">★</span>
+            <span class="star-rating active" onclick="setRating(2)">★</span>
+            <span class="star-rating active" onclick="setRating(3)">★</span>
+            <span class="star-rating active" onclick="setRating(4)">★</span>
+            <span class="star-rating active" onclick="setRating(5)">★</span>
+        </div>
+
+        <button onclick="guardarCalificacion()" class="w-full py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold rounded-xl text-sm transition shadow-md">
+            Enviar Calificación de 5 Estrellas
+        </button>
+        <button onclick="cerrarModalCalificacion()" class="text-xs text-gray-400 hover:text-gray-600 underline">Omitir por ahora</button>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const API_PEDIDOS = 'http://localhost:8080/api/pedidos';
+    const API_CLIENTES = 'http://localhost:8080/api/clientes';
+    let map;
+    let markerRepartidor;
+    let markerDestino = null;
+    let rutaLayer = null;
+    let pedidoSeleccionadoId = null;
+    let currentRouteCoords = [];
+    let listaPedidosGlobal = [];
+    let ratingSeleccionado = 5;
+    let nitClienteBD = 'CF';
+
+    const correoUsuario = obtenerCorreoSesion();
+    const rolActual = (localStorage.getItem('rol') || '').toLowerCase();
+    const nombreUsuario = obtenerNombreSesion();
+
+    function obtenerCorreoSesion() {
+        let correo = localStorage.getItem('correo');
+        if (!correo) {
+            const sesion = JSON.parse(localStorage.getItem('usuarioSesion') || '{}');
+            correo = sesion.correo;
+        }
+        return correo;
+    }
+
+    function obtenerNombreSesion() {
+        let nombre = localStorage.getItem('nombre');
+        if (!nombre) {
+            const sesion = JSON.parse(localStorage.getItem('usuarioSesion') || '{}');
+            nombre = sesion.nombre;
+        }
+        return nombre;
+    }
+
+    // Obtener información del cliente desde la BD (incluyendo su NIT)
+    async function obtenerDatosClienteBD() {
+        if (!correoUsuario) return;
+        try {
+            const res = await fetch(`${API_CLIENTES}/buscar?correo=${encodeURIComponent(correoUsuario)}`);
+            if (res.ok) {
+                const clienteData = await res.json();
+                if (clienteData && clienteData.nit && clienteData.nit.trim() !== '') {
+                    nitClienteBD = clienteData.nit;
+                }
+            }
+        } catch (e) {
+            console.error('Error obteniendo NIT del cliente:', e);
+        }
+    }
+
+    if (nombreUsuario) {
+        const esAdmin = rolActual.includes('admin') || rolActual.includes('subadmin');
+        document.getElementById('saludo-usuario').innerText = esAdmin
+            ? `👑 ${nombreUsuario} (Admin)`
+            : `👋 Hola, ${nombreUsuario}`;
+
+        if (esAdmin) {
+            const enlaceRetorno = document.getElementById('enlace-retorno');
+            if (enlaceRetorno) {
+                enlaceRetorno.href = 'Interfaz_Administrador.html';
+                enlaceRetorno.innerHTML = '<i data-lucide="arrow-left" class="w-4 h-4"></i><span>Volver al Panel Admin</span>';
+            }
+        }
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
+
+    function initMap() {
+        map = L.map('map').setView([14.4784, -90.6213], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        markerRepartidor = L.marker([14.4798, -90.6195]).addTo(map)
+            .bindPopup('<b>Ares Express Base Amatitlán</b>')
+            .openPopup();
+    }
+
+    function detectarCoordenadasPorTexto(textoDireccion) {
+        if (!textoDireccion) return [14.4784, -90.6213];
+        if (textoDireccion.includes("7 Calle 3-22")) return [14.4798, -90.6195];
+        if (textoDireccion.includes("4 Avenida 4-74")) return [14.4735, -90.6245];
+        return [14.4784, -90.6213];
+    }
+
+    async function cargarPedidos() {
+        const contenedorActivos = document.getElementById('lista-pedidos-activos');
+        const contenedorHistorial = document.getElementById('lista-historial');
+
+        contenedorActivos.innerHTML = '<p class="text-sm text-gray-400">Cargando pedidos activos...</p>';
+        contenedorHistorial.innerHTML = '<p class="text-sm text-gray-400">Cargando historial...</p>';
+
+        try {
+            const esAdmin = rolActual.includes('admin') || rolActual.includes('subadmin');
+
+            let urlFetch = API_PEDIDOS;
+            if (!esAdmin) {
+                if (!correoUsuario) {
+                    alert('Sesión no iniciada o caducada.');
+                    window.location.href = 'Login.html';
+                    return;
+                }
+                urlFetch = `${API_PEDIDOS}/cliente/correo/${encodeURIComponent(correoUsuario)}`;
+            }
+
+            const response = await fetch(urlFetch);
+            if (!response.ok) throw new Error('Error al conectar con la API de pedidos');
+
+            listaPedidosGlobal = await response.json();
+
+            contenedorActivos.innerHTML = '';
+            contenedorHistorial.innerHTML = '';
+
+            if (!listaPedidosGlobal || listaPedidosGlobal.length === 0) {
+                contenedorActivos.innerHTML = '<p class="text-sm text-gray-400">No hay pedidos registrados para este usuario.</p>';
+                contenedorHistorial.innerHTML = '<p class="text-sm text-gray-400">Historial vacío.</p>';
+                bloquearBotonSimulacion('Sin pedidos activos');
+                return;
+            }
+
+            let hayActivos = false;
+            let hayHistorial = false;
+
+            listaPedidosGlobal.slice().reverse().forEach(p => {
+                const esEntregado = p.estado === 'ENTREGADO';
+
+                let totalConEnvio = p.total || 0.0;
+
+                if (esEntregado) {
+                    hayHistorial = true;
+                    contenedorHistorial.innerHTML += `
+                        <div class="p-4 bg-gray-50 border border-green-200 rounded-xl space-y-2 shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <strong class="text-gray-800 text-sm">Pedido #${p.id}</strong>
+                                <span class="px-2.5 py-0.5 text-xs font-bold bg-green-100 text-green-700 rounded-full">ENTREGADO</span>
+                            </div>
+                            <p class="text-xs text-gray-600">${p.descripcion}</p>
+                            <p class="text-xs font-bold text-[#f97316]">Total: Q${totalConEnvio.toFixed(2)}</p>
+                            <div class="pt-2 border-t border-gray-200 flex justify-between items-center">
+                                <button type="button" class="px-3 py-1 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-1.5" onclick="verFactura(${p.id});">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Factura PDF
+                                </button>
+                                <button type="button" class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-1.5" onclick="abrirCalificacion(${p.id});">
+                                    <i data-lucide="star" class="w-3.5 h-3.5"></i> Calificar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    hayActivos = true;
+                    let badgeClass = p.estado === 'EN_CAMINO' ? 'bg-cyan-100 text-cyan-700' : 'bg-amber-100 text-amber-700';
+
+                    contenedorActivos.innerHTML += `
+                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-2 cursor-pointer hover:border-[#f97316] transition shadow-sm pedido-card" id="pedido-${p.id}" onclick="seleccionarPedido(${p.id})">
+                            <div class="flex justify-between items-center">
+                                <strong class="text-gray-800 text-sm">Pedido #${p.id}</strong>
+                                <span class="px-2.5 py-0.5 text-xs font-bold rounded-full ${badgeClass}">${p.estado}</span>
+                            </div>
+                            <p class="text-xs text-gray-600">${p.descripcion}</p>
+                            <p class="text-xs font-bold text-[#f97316]">Total: Q${totalConEnvio.toFixed(2)}</p>
+                            <div class="text-[11px] text-gray-400">Vehículo: <span class="uppercase font-bold text-[#f97316]">${p.tipoVehiculo || 'MOTO'}</span></div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (!hayActivos) {
+                contenedorActivos.innerHTML = '<p class="text-sm text-gray-400">No tienes pedidos activos en este momento.</p>';
+                bloquearBotonSimulacion('No hay pedidos activos');
+            }
+            if (!hayHistorial) {
+                contenedorHistorial.innerHTML = '<p class="text-sm text-gray-400">Aún no tienes entregas completadas.</p>';
+            }
+
+            if (pedidoSeleccionadoId) {
+                seleccionarPedido(pedidoSeleccionadoId);
+            }
+
+            lucide.createIcons();
+
+        } catch (error) {
+            console.error('Error:', error);
+            contenedorActivos.innerHTML = '<p class="text-sm text-red-500">Error al cargar pedidos.</p>';
+        }
+    }
+
+    function bloquearBotonSimulacion(mensaje) {
+        const btnSimular = document.getElementById('btn-simular');
+        btnSimular.disabled = true;
+        btnSimular.className = "w-full py-2.5 bg-gray-300 text-gray-500 font-bold rounded-xl transition text-sm cursor-not-allowed";
+        btnSimular.innerText = mensaje;
+    }
+
+    async function seleccionarPedido(idPedido) {
+        pedidoSeleccionadoId = idPedido;
+        const pedido = listaPedidosGlobal.find(p => p.id === idPedido);
+        if (!pedido) return;
+
+        document.querySelectorAll('.pedido-card').forEach(card => {
+            card.classList.remove('border-[#f97316]', 'bg-orange-50/50');
+        });
+        const cardSeleccionada = document.getElementById(`pedido-${idPedido}`);
+        if (cardSeleccionada) cardSeleccionada.classList.add('border-[#f97316]', 'bg-orange-50/50');
+
+        const btnSimular = document.getElementById('btn-simular');
+
+        if (pedido.estado === 'EN_CAMINO') {
+            btnSimular.disabled = false;
+            btnSimular.className = "w-full py-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold rounded-xl shadow-md transition text-sm";
+            btnSimular.innerText = `Simular Recorrido del Piloto (Pedido #${idPedido})`;
+        } else if (pedido.estado === 'PENDIENTE') {
+            bloquearBotonSimulacion(`Esperando a que un repartidor acepte el envío de tipo ${pedido.tipoVehiculo || 'MOTO'}...`);
+        } else {
+            bloquearBotonSimulacion(`Pedido #${idPedido} ya entregado.`);
+        }
+
+        document.getElementById('map-instructions').innerText = `Leyendo direcciones para el Pedido #${idPedido}...`;
+
+        let dirComercio = (pedido.comercio && pedido.comercio.direccion) ? pedido.comercio.direccion : "7 Calle 3-22, Amatitlán";
+        let dirCliente = (pedido.cliente && pedido.cliente.direccion) ? pedido.cliente.direccion : "4 Avenida 4-74, Amatitlán";
+
+        const coordsComercio = detectarCoordenadasPorTexto(dirComercio);
+        const coordsCliente = detectarCoordenadasPorTexto(dirCliente);
+
+        if (markerDestino) map.removeLayer(markerDestino);
+        if (rutaLayer) map.removeLayer(rutaLayer);
+
+        markerRepartidor.setLatLng(coordsComercio);
+        markerRepartidor.bindPopup(`<b>Comercio Emisor:</b><br>${dirComercio}`).openPopup();
+
+        markerDestino = L.marker(coordsCliente).addTo(map)
+            .bindPopup(`<b>Cliente (Entrega):</b><br>${dirCliente}`);
+
+        try {
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordsComercio[1]},${coordsComercio[0]};${coordsCliente[1]},${coordsCliente[0]}?overview=full&geometries=geojson`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.routes && data.routes.length > 0) {
+                const route = data.routes[0];
+                currentRouteCoords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+                rutaLayer = L.polyline(currentRouteCoords, { color: '#f97316', weight: 5, opacity: 0.8 }).addTo(map);
+                map.fitBounds(rutaLayer.getBounds(), { padding: [50, 50] });
+
+                const distanciaKm = (route.distance / 1000).toFixed(2);
+                document.getElementById('map-instructions').innerText = `Ruta exacta: ${distanciaKm} km (${dirComercio} ➔ ${dirCliente})`;
+            } else {
+                throw new Error('No se encontró ruta vial');
+            }
+        } catch (error) {
+            currentRouteCoords = [coordsComercio, coordsCliente];
+            rutaLayer = L.polyline(currentRouteCoords, { color: '#f97316', weight: 4 }).addTo(map);
+            map.setView(coordsCliente, 14);
+        }
+
+        markerDestino.openPopup();
+    }
+
+    async function simularRecorridoAnimado() {
+        if (!pedidoSeleccionadoId || currentRouteCoords.length === 0) {
+            alert('Selecciona un pedido activo en camino primero.');
+            return;
+        }
+
+        const btnSimular = document.getElementById('btn-simular');
+        btnSimular.disabled = true;
+        btnSimular.innerText = 'Piloto en camino hacia tu ubicación...';
+
+        const totalPuntos = currentRouteCoords.length;
+        let tiempoTotalMs = Math.max(15000, totalPuntos * 60);
+        const intervaloMs = tiempoTotalMs / totalPuntos;
+
+        let index = 0;
+        const intervaloAnimacion = setInterval(() => {
+            if (index < totalPuntos) {
+                const puntoActual = currentRouteCoords[index];
+                markerRepartidor.setLatLng(puntoActual);
+                map.panTo(puntoActual, { animate: true, duration: (intervaloMs / 1000) });
+                index++;
+            } else {
+                clearInterval(intervaloAnimacion);
+                alert('¡El piloto ha finalizado la simulación de entrega!');
+                cargarPedidos();
+            }
+        }, intervaloMs);
+    }
+
+    function verFactura(idPedido) {
+        const pedido = listaPedidosGlobal.find(p => p.id === idPedido);
+        if (!pedido) return;
+
+        const nombreComercio = (pedido.comercio && pedido.comercio.nombre) ? pedido.comercio.nombre : 'Restaurante Los Arcos Amatitlán';
+        const nitComercio = pedido.nitComercio || '8765432-1';
+        let costoEnvio = (pedido.costoEnvio !== undefined && pedido.costoEnvio !== null) ? pedido.costoEnvio : 20.50;
+        let totalMonto = pedido.total || 0;
+        let subtotalProductos = totalMonto - costoEnvio;
+
+        // Prioriza el NIT guardado en la base de datos o en el objeto del pedido
+        let nitFinal = pedido.nitCliente || (pedido.cliente && pedido.cliente.nit) || nitClienteBD || 'CF';
+
+        document.getElementById('fac-emisor-nombre').innerText = nombreComercio;
+        document.getElementById('fac-emisor-nit').innerText = nitComercio;
+        document.getElementById('fac-pedido-id').innerText = `#${pedido.id}`;
+        document.getElementById('fac-fecha').innerText = new Date().toLocaleDateString('es-GT');
+        document.getElementById('fac-cliente-nombre').innerText = pedido.nombreFactura || (pedido.cliente && pedido.cliente.nombre) || nombreUsuario || 'Consumidor Final';
+        document.getElementById('fac-cliente-nit').innerText = nitFinal;
+        document.getElementById('fac-descripcion').innerText = pedido.descripcion || 'Detalle del producto';
+        document.getElementById('fac-subtotal').innerText = `Q${subtotalProductos.toFixed(2)}`;
+        document.getElementById('fac-envio').innerText = `Q${costoEnvio.toFixed(2)}`;
+        document.getElementById('fac-tipo-vehiculo').innerText = pedido.tipoVehiculo || 'MOTO';
+        document.getElementById('fac-total').innerText = `Q${totalMonto.toFixed(2)}`;
+
+        document.getElementById('modal-factura').classList.remove('hidden');
+        document.getElementById('modal-factura').classList.add('flex');
+        lucide.createIcons();
+    }
+
+    function cerrarModalFactura() {
+        document.getElementById('modal-factura').classList.remove('flex');
+        document.getElementById('modal-factura').classList.add('hidden');
+    }
+
+    function abrirCalificacion(idPedido) {
+        pedidoSeleccionadoId = idPedido;
+        document.getElementById('modal-calificacion').classList.remove('hidden');
+        document.getElementById('modal-calificacion').classList.add('flex');
+        lucide.createIcons();
+    }
+
+    function cerrarModalCalificacion() {
+        document.getElementById('modal-calificacion').classList.remove('flex');
+        document.getElementById('modal-calificacion').classList.add('hidden');
+    }
+
+    function setRating(val) {
+        ratingSeleccionado = val;
+        const stars = document.querySelectorAll('.star-rating');
+        stars.forEach((s, idx) => {
+            if (idx < val) s.classList.add('active');
+            else s.classList.remove('active');
+        });
+    }
+
+    function guardarCalificacion() {
+        alert(`¡Gracias por calificar! Se ha registrado tu puntuación de ${ratingSeleccionado} estrellas para el repartidor.`);
+        cerrarModalCalificacion();
+    }
+
+    window.onload = async function() {
+        initMap();
+        await obtenerDatosClienteBD();
+        await cargarPedidos();
+        lucide.createIcons();
+    };
+
+async function abrirModalFactura(datosPedido) {
+    // 1. Rellenamos los campos de tu modal con los datos del pedido
+    document.getElementById('fac-pedido-id').innerText = "#" + datosPedido.id;
+    document.getElementById('fac-emisor-nombre').innerText = datosPedido.comercioNombre || "Comercio Emisor";
+    document.getElementById('fac-cliente-nombre').innerText = datosPedido.clienteNombre || "Consumidor Final";
+    document.getElementById('fac-descripcion').innerText = datosPedido.descripcion || "Producto de Menú";
+    document.getElementById('fac-subtotal').innerText = "Q" + Number(datosPedido.subtotal || 0).toFixed(2);
+    document.getElementById('fac-envio').innerText = "Q" + Number(datosPedido.envio || 15).toFixed(2);
+    document.getElementById('fac-total').innerText = "Q" + Number(datosPedido.total || 0).toFixed(2);
+    
+    // Mostramos el modal en pantalla
+    const modal = document.getElementById('modal-factura');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    // 2. Estructuramos el objeto JSON extrayendo los valores directamente de los elementos del DOM 
+    // (o utilizando directamente las propiedades del objeto datosPedido para mayor seguridad)
+    const objetoFactura = {
+        pedidoId: datosPedido.id,
+        emisorNombre: datosPedido.comercioNombre || "Comercio Emisor",
+        emisorNit: "CF",
+        clienteNombre: datosPedido.clienteNombre || "Consumidor Final",
+        clienteNit: "CF",
+        descripcionProducto: datosPedido.descripcion || "Producto de Menú",
+        subtotal: Number(datosPedido.subtotal || 0),
+        costoEnvio: Number(datosPedido.envio || 15),
+        total: Number(datosPedido.total || 0),
+        tipoVehiculo: "MOTO"
+    };
+
+    // 3. Petición POST silenciosa para guardarlo en la BD de PostgreSQL
+    try {
+        const response = await fetch('http://localhost:8080/api/facturas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(objetoFactura)
+        });
+
+        const resultadoTexto = await response.text();
+        if (response.ok) {
+            console.log("¡Factura respaldada con éxito en la base de datos!", resultadoTexto);
+        } else {
+            console.error("El servidor respondió con error:", response.status, resultadoTexto);
+        }
+    } catch (error) {
+        console.error("No se pudo conectar con el servidor para guardar la factura:", error);
+    }
+}
+
+function cerrarModalFactura() {
+    const modal = document.getElementById('modal-factura');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+</script>
+</body>
+</html>

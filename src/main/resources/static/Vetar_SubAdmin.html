@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Veto - Dar de Baja SubAdmin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+<!-- Barra lateral unificada -->
+<aside class="w-64 bg-slate-900 text-white flex flex-col justify-between p-6">
+    <div>
+        <h1 class="text-2xl font-bold mb-2">Ares Express</h1>
+        <p class="text-xs text-slate-400 mb-8">Admin Panel</p>
+
+        <nav class="space-y-3">
+            <a href="/Interfaz_Administrador.html" class="block py-2.5 px-4 rounded hover:bg-slate-800">Panel General</a>
+
+            <!-- Sección Agrupada: Seguridad y Accesos -->
+            <div class="pt-2">
+                <div class="py-2.5 px-4 text-slate-400 font-semibold text-sm flex items-center justify-between">
+                    <span>Seguridad y Accesos</span>
+                </div>
+                <div class="pl-4 space-y-1 mt-1 border-l border-slate-800 ml-2">
+                    <a href="/Vetar_SubAdmin.html" class="block py-2 px-3 rounded text-sm bg-orange-600 text-white font-semibold">Dar de Baja SubAdmin</a>
+                    <a href="/Editar_SubAdmin.html" class="block py-2 px-3 rounded text-sm hover:bg-slate-800 text-slate-300">Editar SubAdmin</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div>
+        <button onclick="localStorage.clear(); window.location.href='/Login.html';" class="text-red-400 hover:text-red-300 text-sm flex items-center gap-2">Cerrar Sesión</button>
+    </div>
+</aside>
+
+<!-- Contenido Principal -->
+<div class="flex-1 flex flex-col">
+    <!-- Header superior -->
+    <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <a href="Interfaz_Administrador.html" class="text-gray-400 hover:text-[#f97316] transition flex items-center gap-1 text-sm font-medium">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Panel
+            </a>
+            <span class="text-gray-300">|</span>
+            <h2 class="text-lg font-semibold text-gray-800">Gestión de Veto - Dar de Baja SubAdministrador</h2>
+        </div>
+        <div class="text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+            Administrador General
+        </div>
+    </header>
+
+    <!-- Tabla y Contenido -->
+    <main class="p-8 max-w-6xl w-full mx-auto space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="bg-red-50 text-red-500 p-3 rounded-2xl">
+                    <i data-lucide="user-x" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">SubAdministradores Registrados</h3>
+                    <p class="text-sm text-gray-500 mt-0.5">Seleccione un subadministrador para revocar sus permisos de acceso al sistema de forma permanente.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de SubAdmins -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th class="py-4 px-6">Nombre</th>
+                    <th class="py-4 px-6">Correo Electrónico</th>
+                    <th class="py-4 px-6 text-right">Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tablaSubAdmins" class="divide-y divide-gray-100 text-sm text-gray-700">
+                <!-- Se llena dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Script para Cargar y Eliminar -->
+<script>
+    lucide.createIcons();
+
+    document.addEventListener('DOMContentLoaded', cargarSubAdmins);
+
+    async function cargarSubAdmins() {
+        const correoAdminActual = localStorage.getItem('adminCorreo');
+
+        try {
+            const response = await fetch(`/api/admin/subadmins?correoAdminActual=${encodeURIComponent(correoAdminActual)}`);
+            if (response.ok) {
+                const subadmins = await response.json();
+                const tbody = document.getElementById('tablaSubAdmins');
+                tbody.innerHTML = '';
+
+                if (subadmins.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-gray-400">No hay subadministradores registrados.</td></tr>`;
+                    return;
+                }
+
+                subadmins.forEach(admin => {
+                    tbody.innerHTML += `
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6 font-medium text-gray-800">${admin.nombre}</td>
+                                <td class="py-4 px-6 text-gray-500">${admin.correo}</td>
+                                <td class="py-4 px-6 text-right">
+                                    <button onclick="darDeBaja(${admin.id})" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg text-xs transition flex items-center gap-1.5 ml-auto">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i> Dar de baja
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                });
+                lucide.createIcons();
+            } else {
+                alert('No se pudo cargar la lista de subadministradores.');
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+        }
+    }
+
+    async function darDeBaja(id) {
+        if (!confirm('¿Está seguro de que desea dar de baja a este subadministrador? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        const correoAdminActual = localStorage.getItem('adminCorreo');
+
+        try {
+            const response = await fetch(`/api/admin/subadmin/${id}?correoAdminActual=${encodeURIComponent(correoAdminActual)}`, {
+                method: 'DELETE'
+            });
+
+            const resultado = await response.json();
+
+            if (response.ok && resultado.success) {
+                alert(resultado.message);
+                cargarSubAdmins(); // Recargar la tabla
+            } else {
+                alert(resultado.message || 'Error al dar de baja.');
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            alert('Error al conectar con el servidor.');
+        }
+    }
+</script>
+</body>
+</html>

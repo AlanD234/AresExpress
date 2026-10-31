@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Panel de Repartidor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col font-sans">
+
+<!-- Header Principal -->
+<header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 md:px-8 shadow-sm">
+    <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center text-[#f97316]">
+            <i data-lucide="truck" class="w-6 h-6"></i>
+        </div>
+        <div>
+            <h1 class="text-lg md:text-xl font-bold text-gray-800 tracking-wide">Ares Express - Repartidor</h1>
+            <span id="saludo-repartidor" class="text-xs font-semibold text-[#f97316]">Cargando sesión...</span>
+        </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+        <button onclick="cargarPedidosDisponibles()" class="px-3 py-1.5 bg-orange-50 border border-orange-200 text-[#f97316] text-xs font-semibold rounded-xl hover:bg-[#f97316] hover:text-white transition flex items-center space-x-1 shadow-sm">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Actualizar</span>
+        </button>
+        <a href="index.html" onclick="localStorage.clear()" class="text-sm font-medium text-red-500 hover:bg-red-50 px-3 py-2 rounded-xl transition flex items-center space-x-1">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Cerrar Sesión</span>
+        </a>
+    </div>
+</header>
+
+<!-- Contenido Principal -->
+<main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+
+    <!-- Sección 1: Pedidos Disponibles Filtrados por Vehículo -->
+    <section class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col">
+        <div class="mb-4 pb-3 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center space-x-2">
+                <i data-lucide="package" class="w-5 h-5 text-[#f97316]"></i>
+                <span>Pedidos Disponibles para tu Unidad</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-0.5">Acepta un pedido compatible con tu tipo de vehículo.</p>
+        </div>
+
+        <div id="lista-pedidos-pendientes" class="flex-1 overflow-y-auto space-y-3 max-h-[500px] pr-1">
+            <p class="text-sm text-gray-400">Cargando pedidos compatibles...</p>
+        </div>
+    </section>
+
+    <!-- Sección 2: Mis Entregas en Curso / Asignadas -->
+    <section class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col">
+        <div class="mb-4 pb-3 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center space-x-2">
+                <i data-lucide="navigation" class="w-5 h-5 text-[#f97316]"></i>
+                <span>Mis Entregas Activas</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-0.5">Gestiona el estado de tus entregas en curso.</p>
+        </div>
+
+        <div id="lista-pedidos-asignados" class="flex-1 overflow-y-auto space-y-3 max-h-[500px] pr-1">
+            <p class="text-sm text-gray-400">No tienes entregas asignadas actualmente.</p>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    const API_PEDIDOS = 'http://localhost:8080/api/pedidos';
+    const API_REPARTIDORES = 'http://localhost:8080/api/repartidores';
+
+    const nombreUsuario = localStorage.getItem('nombre') || 'Repartidor';
+    const correoUsuario = localStorage.getItem('correo');
+
+    document.getElementById('saludo-repartidor').innerText = `👋 Piloto: ${nombreUsuario}`;
+
+    if (!correoUsuario) {
+        alert('Debe iniciar sesión para continuar.');
+        window.location.href = 'index.html';
+    }
+
+    let tipoVehiculoRepartidor = 'MOTO';
+
+    async function cargarPedidosDisponibles() {
+        const contenedorPendientes = document.getElementById('lista-pedidos-pendientes');
+        const contenedorAsignados = document.getElementById('lista-pedidos-asignados');
+
+        contenedorPendientes.innerHTML = '<p class="text-sm text-gray-400">Cargando...</p>';
+        contenedorAsignados.innerHTML = '<p class="text-sm text-gray-400">Cargando...</p>';
+
+        try {
+            // 1. Obtener el perfil del repartidor logueado para conocer su tipo de vehículo exacto
+            const resRepartidor = await fetch(`${API_REPARTIDORES}/correo/${encodeURIComponent(correoUsuario)}`);
+            if (!resRepartidor.ok) throw new Error('No se pudo obtener el perfil del repartidor');
+
+            const repartidorActual = await resRepartidor.json();
+            tipoVehiculoRepartidor = repartidorActual.type || repartidorActual.tipoVehiculo || 'MOTO';
+
+            // 2. Consultar SOLAMENTE los pedidos disponibles filtrados para este tipo de vehículo
+            const responsePed = await fetch(`${API_PEDIDOS}/disponibles/${tipoVehiculoRepartidor}`);
+            if (!responsePed.ok) throw new Error('Error al conectar con la API de pedidos');
+
+            const pedidosDisponibles = await responsePed.json();
+
+            // 3. Consultar todos los pedidos para verificar las entregas activas del repartidor
+            const responseTodos = await fetch(API_PEDIDOS);
+            const todosLosPedidos = await responseTodos.json();
+
+            contenedorPendientes.innerHTML = '';
+            contenedorAsignados.innerHTML = '';
+
+            let hayPendientes = false;
+            let hayAsignados = false;
+
+            // Renderizar pedidos pendientes compatibles
+            pedidosDisponibles.forEach(p => {
+                if (p.estado === 'PENDIENTE') {
+                    hayPendientes = true;
+                    const totalExacto = p.total || 0.0;
+                    contenedorPendientes.innerHTML += `
+                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-2 shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <strong class="text-gray-800 text-sm">Pedido #${p.id}</strong>
+                                <span class="px-2.5 py-0.5 text-xs font-bold bg-amber-100 text-amber-700 rounded-full">PENDIENTE</span>
+                            </div>
+                            <p class="text-xs text-gray-600">${p.descripcion}</p>
+                            <p class="text-xs font-bold text-[#f97316]">Total: Q${totalExacto.toFixed(2)}</p>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                <span class="text-[11px] text-gray-500 uppercase font-bold">Unidad Requerida: ${p.tipoVehiculo || tipoVehiculoRepartidor}</span>
+                                <button onclick="aceptarPedido(${p.id}, ${repartidorActual.id})" class="px-3 py-1.5 bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-semibold rounded-lg shadow-sm transition flex items-center gap-1">
+                                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                    <span>Aceptar Envío</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Renderizar entregas activas del repartidor actual
+            todosLosPedidos.forEach(p => {
+                if (p.repartidor && p.repartidor.id === repartidorActual.id && p.estado === 'EN_CAMINO') {
+                    hayAsignados = true;
+                    const totalExacto = p.total || 0.0;
+                    contenedorAsignados.innerHTML += `
+                        <div class="p-4 bg-orange-50 border border-orange-200 rounded-xl space-y-2 shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <strong class="text-gray-800 text-sm">Pedido #${p.id}</strong>
+                                <span class="px-2.5 py-0.5 text-xs font-bold bg-cyan-100 text-cyan-700 rounded-full">EN CAMINO</span>
+                            </div>
+                            <p class="text-xs text-gray-600">${p.descripcion}</p>
+                            <p class="text-xs font-bold text-[#f97316]">Total: Q${totalExacto.toFixed(2)}</p>
+                            <div class="flex justify-end pt-2 border-t border-orange-200">
+                                <button onclick="marcarEntregado(${p.id})" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                                    Marcar como Entregado
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (!hayPendientes) contenedorPendientes.innerHTML = `<p class="text-sm text-gray-400">No hay pedidos pendientes para unidades de tipo ${tipoVehiculoRepartidor}.</p>`;
+            if (!hayAsignados) contenedorAsignados.innerHTML = '<p class="text-sm text-gray-400">No tienes entregas activas en curso.</p>';
+
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error:', error);
+            contenedorPendientes.innerHTML = '<p class="text-sm text-red-500">Error al cargar pedidos compatibles.</p>';
+        }
+    }
+
+    async function aceptarPedido(pedidoId, repartidorId) {
+        try {
+            const response = await fetch(`${API_PEDIDOS}/${pedidoId}/asignar/${repartidorId}`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                alert('¡Has aceptado el pedido con éxito!');
+                cargarPedidosDisponibles();
+            } else {
+                const errorData = await response.json();
+                alert('No se pudo asignar el pedido: ' + (errorData.error || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de red al intentar aceptar el pedido.');
+        }
+    }
+
+    async function marcarEntregado(pedidoId) {
+        try {
+            const response = await fetch(`${API_PEDIDOS}/${pedidoId}/estado?estado=ENTREGADO`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                alert('¡Pedido marcado como ENTREGADO!');
+                cargarPedidosDisponibles();
+            } else {
+                alert('Error al actualizar el estado del pedido.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión.');
+        }
+    }
+
+    window.onload = function() {
+        cargarPedidosDisponibles();
+        lucide.createIcons();
+    };
+</script>
+</body>
+</html>

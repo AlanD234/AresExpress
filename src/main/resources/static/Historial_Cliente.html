@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Clientes - Ares Express</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+<!-- Sidebar unificado -->
+<aside class="w-72 bg-[#0d1527] text-white flex flex-col justify-between p-6 shadow-lg">
+    <div class="space-y-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide text-white">Ares Express</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Admin Panel</p>
+        </div>
+        <nav class="space-y-2">
+            <a href="Interfaz_Administrador.html" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Panel General</span>
+            </a>
+            <div class="space-y-1">
+                <button class="w-full flex items-center justify-between px-4 py-3 bg-[#f97316] text-white rounded-xl font-medium shadow-md transition">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        <span class="font-medium">Gestión de Clientes</span>
+                    </div>
+                </button>
+                <div class="pl-11 space-y-1 py-1">
+                    <a href="Vetar_Cliente.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Vetar Cliente</a>
+                    <a href="Historial_Cliente.html" class="block py-2 text-xs text-white font-semibold transition">Historial Cliente</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+</aside>
+
+<!-- Contenido Principal -->
+<div class="flex-1 flex flex-col">
+    <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <a href="Interfaz_Administrador.html" class="text-gray-400 hover:text-[#f97316] transition flex items-center gap-1 text-sm font-medium">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Panel
+            </a>
+            <span class="text-gray-300">|</span>
+            <h2 class="text-lg font-semibold text-gray-800">Historial General y Registro de Pedidos</h2>
+        </div>
+        <div class="text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+            Administrador General
+        </div>
+    </header>
+
+    <main class="p-8 max-w-6xl w-full mx-auto space-y-6">
+
+        <!-- Encabezado de la Sección -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="bg-blue-50 text-blue-600 p-3 rounded-2xl">
+                    <i data-lucide="history" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Directorio de Clientes</h3>
+                    <p class="text-sm text-gray-500 mt-0.5">Consulte la información general y revise el historial de pedidos de cada cliente.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Búsqueda Omnibox (ID, Nombre, Correo, Teléfono) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+            <div class="relative">
+                <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="inputBusqueda" onkeyup="filtrarClientes()" placeholder="Buscar por Nombre, Correo Electrónico, ID o Teléfono..." class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+            </div>
+        </div>
+
+        <!-- Tabla Dinámica de Clientes -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        <th class="py-4 px-6">ID</th>
+                        <th class="py-4 px-6">Cliente</th>
+                        <th class="py-4 px-6">Contacto</th>
+                        <th class="py-4 px-6">Estado</th>
+                        <th class="py-4 px-6 text-center">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tablaClientesBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                    <tr><td colspan="5" class="py-8 text-center text-gray-400">Cargando directorio de clientes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal para Mostrar Pedidos del Cliente -->
+<div id="modalPedidos" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[80vh]">
+        <div class="p-6 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+            <div>
+                <h3 id="modalClienteNombre" class="text-lg font-bold text-gray-800">Historial de Pedidos</h3>
+                <p id="modalClienteInfo" class="text-xs text-gray-500">Listado de compras asociadas</p>
+            </div>
+            <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-200 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th class="pb-3">ID Pedido</th>
+                    <th class="pb-3">Detalle / Vehículo</th>
+                    <th class="pb-3">Estado</th>
+                    <th class="pb-3 text-right">Total (Con Envío)</th>
+                </tr>
+                </thead>
+                <tbody id="tablaPedidosBody" class="divide-y divide-gray-100 text-sm">
+                <!-- Se llena dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <button onclick="cerrarModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-xs rounded-xl transition">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_CLIENTES = 'http://localhost:8080/api/clientes';
+    const API_PEDIDOS = 'http://localhost:8080/api/pedidos';
+    let clientesCargados = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarClientes();
+    });
+
+    async function cargarClientes() {
+        try {
+            const response = await fetch(API_CLIENTES);
+            if (response.ok) {
+                clientesCargados = await response.json();
+                renderizarTabla();
+            } else {
+                clientesCargados = [];
+                renderizarTabla();
+            }
+        } catch (error) {
+            console.error('Error al obtener clientes:', error);
+        }
+    }
+
+    function renderizarTabla() {
+        const tbody = document.getElementById('tablaClientesBody');
+        const busqueda = document.getElementById('inputBusqueda').value.toLowerCase().trim();
+
+        let filtrados = clientesCargados;
+
+        if (busqueda !== '') {
+            filtrados = filtrados.filter(c => {
+                const idMatch = c.id ? c.id.toString().includes(busqueda) : false;
+                const nombreMatch = c.nombre ? c.nombre.toLowerCase().includes(busqueda) : false;
+                const correoMatch = c.correo ? c.correo.toLowerCase().includes(busqueda) : false;
+                const telefonoMatch = c.telefono ? c.telefono.toLowerCase().includes(busqueda) : false;
+                return idMatch || nombreMatch || correoMatch || telefonoMatch;
+            });
+        }
+
+        if (filtrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400">No se encontraron clientes registrados.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        filtrados.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50 transition";
+            const estaActivo = c.activo !== false;
+
+            tr.innerHTML = `
+                <td class="py-4 px-6 font-bold text-gray-500">#${c.id}</td>
+                <td class="py-4 px-6 font-bold text-gray-900">${c.nombre}</td>
+                <td class="py-4 px-6 text-xs text-gray-600">
+                    <div>${c.correo || 'Sin correo'}</div>
+                    <div class="text-gray-400">${c.telefono || 'Sin teléfono'}</div>
+                </td>
+                <td class="py-4 px-6">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${
+                estaActivo ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
+            }">
+                        ${estaActivo ? 'Activo' : 'Vetado'}
+                    </span>
+                </td>
+                <td class="py-4 px-6 text-center">
+                    <button onclick="verPedidosCliente(${c.id}, '${c.nombre}')" class="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> Ver Pedidos
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        lucide.createIcons();
+    }
+
+    function filtrarClientes() {
+        renderizarTabla();
+    }
+
+    async function verPedidosCliente(clienteId, nombreCliente) {
+        document.getElementById('modalClienteNombre').textContent = `Pedidos de ${nombreCliente}`;
+        document.getElementById('modalClienteInfo').textContent = `Cliente ID: #${clienteId}`;
+        const tbodyPedidos = document.getElementById('tablaPedidosBody');
+        tbodyPedidos.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-400">Cargando pedidos...</td></tr>`;
+
+        document.getElementById('modalPedidos').classList.remove('hidden');
+        document.getElementById('modalPedidos').classList.add('flex');
+
+        try {
+            const response = await fetch(`${API_PEDIDOS}/cliente/${clienteId}`);
+            if (response.ok) {
+                const pedidos = await response.json();
+                if (!pedidos || pedidos.length === 0) {
+                    tbodyPedidos.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-400">Este cliente aún no registra pedidos en el sistema.</td></tr>`;
+                    return;
+                }
+
+                tbodyPedidos.innerHTML = '';
+                pedidos.forEach(p => {
+                    // Cálculo correcto sumando el subtotal de productos + costo de envío
+                    let subtotalProd = p.total || 0.0;
+                    let costoEnvio = (p.costoEnvio !== undefined && p.costoEnvio !== null) ? p.costoEnvio : 20.50;
+                    let totalConEnvio = subtotalProd + costoEnvio;
+
+                    let badgeEstado = 'bg-gray-100 text-gray-700';
+                    if (p.estado === 'ENTREGADO') badgeEstado = 'bg-green-100 text-green-700';
+                    if (p.estado === 'EN_CAMINO') badgeEstado = 'bg-cyan-100 text-cyan-700';
+                    if (p.estado === 'PENDIENTE') badgeEstado = 'bg-amber-100 text-amber-700';
+
+                    tbodyPedidos.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 font-bold text-gray-700">#${p.id}</td>
+                            <td class="py-3 text-gray-600 text-xs">
+                                <div class="font-medium">${p.descripcion || 'Producto'}</div>
+                                <div class="text-[10px] text-orange-500 uppercase font-bold">Vehículo: ${p.tipoVehiculo || 'MOTO'}</div>
+                            </td>
+                            <td class="py-3">
+                                <span class="px-2 py-0.5 rounded text-xs font-semibold ${badgeEstado}">
+                                    ${p.estado || 'PENDIENTE'}
+                                </span>
+                            </td>
+                            <td class="py-3 text-right font-bold text-[#f97316]">Q${totalConEnvio.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbodyPedidos.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-400">No se pudieron cargar los pedidos.</td></tr>`;
+            }
+        } catch (error) {
+            console.error('Error al obtener pedidos:', error);
+            tbodyPedidos.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-400">Sin historial de pedidos disponible.</td></tr>`;
+        }
+        lucide.createIcons();
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalPedidos').classList.add('hidden');
+        document.getElementById('modalPedidos').classList.remove('flex');
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Registrar Nuevo Comercio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- BARRA LATERAL (SIDEBAR) -->
+        <aside class="w-64 bg-[#0f172a] text-white flex flex-col justify-between p-4 flex-shrink-0 overflow-y-auto">
+            <div>
+                <!-- Logo / Nombre del Sistema -->
+                <div class="mb-6 px-2">
+                    <h1 class="text-xl font-bold tracking-wide">Ares Express</h1>
+                    <p class="text-xs text-gray-400">Admin Panel</p>
+                </div>
+
+                <!-- Menú de Navegación -->
+                <nav class="space-y-3">
+                    
+                    <!-- Panel General -->
+                    <a href="Interfaz_Administrador.html" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-white/5 rounded-xl transition">
+                        <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                        <span class="font-medium">Panel General</span>
+                    </a>
+
+                    <!-- 1. Menú Desplegable: Pilotos -->
+                    <div class="space-y-1">
+                        <button onclick="toggleSubmenu('submenu-pilotos', 'icon-pilotos')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="truck" class="w-5 h-5"></i>
+                                <span class="font-medium">Pilotos</span>
+                            </div>
+                            <i id="icon-pilotos" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                        </button>
+                        
+                        <div id="submenu-pilotos" class="hidden pl-11 space-y-1 py-1">
+                            <a href="Registrar_Vehiculo.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Registrar Vehículo</a>
+                            <a href="Editar_Vehiculo.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Editar Vehículo</a>
+                            <a href="Vetar_Vehiculo.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Dar de baja Vehículo</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Registrar piloto</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Historial pilotos</a>
+                        </div>
+                    </div>
+
+                    <!-- 2. Menú Desplegable: Clientes -->
+                    <div class="space-y-1">
+                        <button onclick="toggleSubmenu('submenu-clientes', 'icon-clientes')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                                <span class="font-medium">Clientes</span>
+                            </div>
+                            <i id="icon-clientes" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                        </button>
+                        
+                        <div id="submenu-clientes" class="hidden pl-11 space-y-1 py-1">
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Vetar cliente</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Historial cliente</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Editar pedido</a>
+                        </div>
+                    </div>
+
+                    <!-- 3. Menú Desplegable: Comercios (ABIERTO POR DEFECTO) -->
+                    <div class="space-y-1">
+                        <button onclick="toggleSubmenu('submenu-comercios', 'icon-comercios')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="store" class="w-5 h-5"></i>
+                                <span class="font-medium">Comercios</span>
+                            </div>
+                            <i id="icon-comercios" data-lucide="chevron-up" class="w-4 h-4 transition-transform duration-200"></i>
+                        </button>
+                        
+                        <div id="submenu-comercios" class="pl-11 space-y-1 py-1">
+                            <a href="Registrar_Comercio.html" class="block py-2 text-xs text-white font-semibold transition">Registrar Nuevo comercio</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Editar comercio</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Editar Menús</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Vetar comercio</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Ver comercios activos</a>
+                            <a href="#" class="block py-2 text-xs text-gray-400 hover:text-white transition">Ver comercios de baja</a>
+                        </div>
+                    </div>
+
+                </nav>
+            </div>
+
+            <!-- Botón Cerrar Sesión -->
+            <div class="pt-4 border-t border-gray-800">
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition text-sm font-medium">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ÁREA DE CONTENIDO -->
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- Barra superior -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3 text-sm">
+                    <a href="Interfaz_Administrador.html" class="text-gray-400 hover:text-gray-600 transition flex items-center gap-1">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Panel
+                    </a>
+                    <span class="text-gray-300">|</span>
+                    <span class="font-bold text-gray-800">Gestión de Comercios - Registro de Aliado</span>
+                </div>
+                <div class="bg-gray-100 px-4 py-2 rounded-xl text-xs font-semibold text-gray-700">
+                    Administrador General
+                </div>
+            </header>
+
+            <!-- Formulario Principal -->
+            <div class="p-8 max-w-5xl mx-auto w-full">
+                
+                <div class="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                    
+                    <!-- Encabezado de la Tarjeta -->
+                    <div class="flex items-center space-x-4 mb-8">
+                        <div class="bg-emerald-50 text-emerald-600 p-3.5 rounded-2xl">
+                            <i data-lucide="store" class="w-7 h-7"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Registrar Nuevo Comercio</h2>
+                            <p class="text-xs text-gray-500 mt-1">Ingrese los datos comerciales, datos de facturación, recolección y horarios de atención.</p>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Registro -->
+                    <form id="formRegistrarComercio" onsubmit="guardarComercio(event)" class="space-y-8">
+                        
+                        <!-- SECCIÓN 1: DATOS COMERCIALES Y GENERALES -->
+                        <div>
+                            <h3 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="building-2" class="w-4 h-4"></i>
+                                Datos Comerciales y Generales
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                
+                                <!-- Nombre Comercial -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">NOMBRE COMERCIAL *</label>
+                                    <input type="text" id="nombre" required placeholder="Ej: Hamburguesas El Chapín" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+
+                                <!-- Categoría / Giro -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">CATEGORÍA O GIRO *</label>
+                                    <select id="categoria" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="" disabled selected>Seleccione la categoría</option>
+                                        <option value="Restaurante">Restaurante</option>
+                                        <option value="Local comida rápida">Local comida rápida</option>
+                                        <option value="Local comida casera">Local comida casera</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: INFORMACIÓN FISCAL Y FACTURACIÓN -->
+                        <div>
+                            <h3 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="receipt" class="w-4 h-4"></i>
+                                Información Fiscal y Facturación
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                
+                                <!-- Razón Social -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">RAZÓN SOCIAL *</label>
+                                    <input type="text" id="razonSocial" required placeholder="Ej: Corporación Gastronómica S.A. / Juan Pérez" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+
+                                <!-- NIT -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">NIT (NÚMERO DE IDENTIFICACIÓN TRIBUTARIA) *</label>
+                                    <input type="text" id="nit" required placeholder="Ej: 1234567-8 o CF" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+
+                                <!-- Régimen Tributario (ISR) -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">RÉGIMEN DE ISR *</label>
+                                    <select id="regimenIsr" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="" disabled selected>Seleccione régimen de ISR</option>
+                                        <option value="Opcional Simplificado">Opcional Simplificado (Sujeto a Retención de ISR)</option>
+                                        <option value="Sobre Utilidades">Sobre Utilidades de Actividades Lucrativas (Pagos Trimestrales)</option>
+                                        <option value="Pequeño Contribuyente">Pequeño Contribuyente (5%)</option>
+                                        <option value="Exento">Exento</option>
+                                    </select>
+                                </div>
+
+                                <!-- Retenedor de IVA -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">¿ES AGENTE RETENEDOR DE IVA? *</label>
+                                    <select id="agenteRetenedorIva" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="" disabled selected>Seleccione una opción</option>
+                                        <option value="No">No es agente retenedor</option>
+                                        <option value="Si">Sí es agente retenedor de IVA</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: LOGÍSTICA Y CONTACTO -->
+                        <div>
+                            <h3 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                Punto de Recolección y Contacto
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                
+                                <!-- Contacto / Gerente -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">PERSONA DE CONTACTO / ENCARGADO *</label>
+                                    <input type="text" id="contactoPersona" required placeholder="Ej: Carlos Mendoza (Gerente de Sucursal)" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+
+                                <!-- Teléfono -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">TELÉFONO DE RECOLECCIÓN *</label>
+                                    <input type="tel" id="telefono" required placeholder="Ej: 5555-1234" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+
+                            </div>
+
+                            <!-- Dirección Exacta -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-2">DIRECCIÓN EXACTA DE RECOLECCIÓN *</label>
+                                <textarea id="direccion" rows="3" required placeholder="Ej: 3ra Avenida 8-45 Zona 11, Local B, Plaza Comercial..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 4: HORARIOS DE ATENCIÓN Y RECOLECCIÓN -->
+                        <div>
+                            <h3 class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                Horarios de Atención y Recolección
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                
+                                <!-- Días de Operación -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">DÍAS DE OPERACIÓN *</label>
+                                    <select id="diasOperacion" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
+                                        <option value="" disabled selected>Seleccione los días</option>
+                                        <option value="Lunes a Viernes">Lunes a Viernes</option>
+                                        <option value="Lunes a Sábado">Lunes a Sábado</option>
+                                        <option value="Todos los días">Lunes a Domingo (Todos los días)</option>
+                                        <option value="Fines de Semana">Únicamente Fines de Semana</option>
+                                    </select>
+                                </div>
+
+                                <!-- Hora Apertura -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">HORA DE APERTURA *</label>
+                                    <input type="time" id="horaApertura" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+
+                                <!-- Hora Cierre -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">HORA DE CIERRE *</label>
+                                    <input type="time" id="horaCierre" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800">
+                                </div>
+
+                                <!-- Logo de la Empresa -->
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-2">LOGO DE LA EMPRESA *</label>
+                                    <input type="file" id="logoFile" accept="image/*" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Botón de Envío -->
+                        <div class="pt-4 flex justify-end">
+                            <button type="submit" class="px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition shadow-md text-sm flex items-center gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                Guardar Comercio
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Script de Interactividad -->
+    <script>
+        lucide.createIcons();
+
+        // Función para los menús desplegables de la barra lateral
+        function toggleSubmenu(id, iconId) {
+            const submenu = document.getElementById(id);
+            const icon = document.getElementById(iconId);
+            
+            if (submenu.classList.contains('hidden')) {
+                submenu.classList.remove('hidden');
+                icon.setAttribute('data-lucide', 'chevron-up');
+            } else {
+                submenu.classList.add('hidden');
+                icon.setAttribute('data-lucide', 'chevron-down');
+            }
+            lucide.createIcons();
+        }
+
+        // Función real para enviar los datos al backend (Spring Boot)
+        async function guardarComercio(event) {
+        event.preventDefault(); // Evita que la página se recargue
+
+        // Creamos un objeto FormData para enviar texto y archivos de forma conjunta
+        const formData = new FormData();
+        formData.append('nombre', document.getElementById('nombre').value);
+        formData.append('categoria', document.getElementById('categoria').value);
+        formData.append('razonSocial', document.getElementById('razonSocial').value);
+        formData.append('nit', document.getElementById('nit').value);
+        formData.append('regimenIsr', document.getElementById('regimenIsr').value);
+        formData.append('agenteRetenedorIva', document.getElementById('agenteRetenedorIva').value === 'Si');
+        formData.append('contactoPersona', document.getElementById('contactoPersona').value);
+        formData.append('telefono', document.getElementById('telefono').value);
+        formData.append('direccion', document.getElementById('direccion').value);
+        formData.append('diasOperacion', document.getElementById('diasOperacion').value);
+        formData.append('horaApertura', document.getElementById('horaApertura').value);
+        formData.append('horaCierre', document.getElementById('horaCierre').value);
+        formData.append('abierto', true); // Por defecto inicia activo
+
+        // Capturamos el archivo de imagen del input con id="logoFile"
+        const logoInput = document.getElementById('logoFile');
+        if (logoInput.files.length > 0) {
+            formData.append('logo', logoInput.files[0]);
+        }
+
+        try {
+            // Petición POST hacia tu controlador de Spring Boot
+            const response = await fetch('http://localhost:8080/api/comercios', {
+                method: 'POST',
+                // IMPORTANTE: Al usar FormData, NO se debe incluir el header 'Content-Type', 
+                // el navegador lo configura automáticamente con el boundary correcto.
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("¡Comercio y logo registrados y guardados exitosamente en PostgreSQL!");
+                window.location.href = "Interfaz_Administrador.html";
+            } else {
+                alert("Error al registrar el comercio en el servidor. Revise la consola.");
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            alert("No se pudo conectar con el backend de Spring Boot.");
+        }
+    }
+    </script>
+</body>
+</html>

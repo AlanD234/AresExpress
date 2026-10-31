@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Registro de Repartidores</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col font-sans">
+
+<!-- Header Principal -->
+<header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 md:px-8 shadow-sm">
+    <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center text-[#f97316]">
+            <i data-lucide="truck" class="w-6 h-6"></i>
+        </div>
+        <div>
+            <h1 class="text-lg md:text-xl font-bold text-gray-800 tracking-wide">Ares Express</h1>
+            <span class="text-xs font-semibold text-[#f97316]">Portal de Registro de Repartidores</span>
+        </div>
+    </div>
+
+    <div>
+        <a href="Interfaz_Administrador.html" class="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-200 transition text-sm flex items-center space-x-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Volver al Panel</span>
+        </a>
+    </div>
+</header>
+
+<!-- Contenido Principal -->
+<main class="flex-1 p-6 md:p-8 max-w-2xl mx-auto w-full flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-sm w-full space-y-6">
+
+        <div class="flex items-center space-x-3 pb-4 border-b border-gray-100">
+            <div class="w-12 h-12 bg-orange-50 border border-orange-200 rounded-2xl flex items-center justify-center text-[#f97316]">
+                <i data-lucide="user-plus" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Registrar Nuevo Repartidor</h2>
+                <p class="text-xs text-gray-500 mt-1">Ingresa los datos personales, de acceso y selecciona el tipo de unidad corporativa asignada.</p>
+            </div>
+        </div>
+
+        <form id="form-registrar-repartidor" onsubmit="registrarRepartidorAPI(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre Completo *</label>
+                    <input type="text" id="repartidor-nombre" required placeholder="Ej. Héctor Salamanca" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Teléfono / Contacto *</label>
+                    <input type="text" id="repartidor-telefono" required placeholder="Ej. 33446622" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Documento de Identificación (DPI) *</label>
+                    <input type="text" id="repartidor-dpi" required placeholder="Ej. 9393 39204 9394" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Número de Licencia *</label>
+                    <input type="text" id="repartidor-licencia" required placeholder="Ej. A-3-394753" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Correo Electrónico *</label>
+                    <input type="email" id="repartidor-correo" required placeholder="lalo@yahoo.com" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña *</label>
+                    <input type="password" id="repartidor-contrasena" required placeholder="••••••••" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                </div>
+            </div>
+
+            <!-- Selector de tipo de vehículo corporativo -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Vehículo Asignado *</label>
+                <select id="repartidor-tipo" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+                    <option value="MOTO">Motocicleta Corporativa</option>
+                    <option value="AUTOMOVIL">Automóvil Corporativo</option>
+                    <option value="BICICLETA">Bicicleta Corporativa</option>
+                </select>
+            </div>
+
+            <div class="pt-2">
+                <button type="submit" class="w-full py-3 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold rounded-xl shadow-md transition text-sm flex items-center justify-center space-x-2">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <span>Registrar Repartidor</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+    const API_REPARTIDORES = 'http://localhost:8080/api/repartidores';
+
+    async function registrarRepartidorAPI(event) {
+        event.preventDefault();
+
+        const tipoSeleccionado = document.getElementById('repartidor-tipo').value;
+        const correo = document.getElementById('repartidor-correo').value.trim();
+        const contrasena = document.getElementById('repartidor-contrasena').value.trim();
+        const nombre = document.getElementById('repartidor-nombre').value.trim();
+        const telefono = document.getElementById('repartidor-telefono').value.trim();
+
+        // Estructura JSON con activo: true incluido para evitar restricciones NOT NULL
+        let nuevoRepartidor = {
+            dpi: document.getElementById('repartidor-dpi').value.trim(),
+            licencia: document.getElementById('repartidor-licencia').value.trim(),
+            calificacionPromedio: 5.0,
+            activo: true,
+            type: tipoSeleccionado,
+            placaMoto: tipoSeleccionado === 'MOTO' ? 'CORPORATIVA' : null,
+            numeroLicencia: tipoSeleccionado === 'AUTOMOVIL' ? 'CORPORATIVA' : null,
+            tieneCascoSeguridad: tipoSeleccionado === 'BICICLETA' ? true : null,
+
+            usuario: {
+                nombre: nombre,
+                correo: correo,
+                password: contrasena,
+                telefono: telefono,
+                rol: "REPARTIDOR",
+                activo: true
+            }
+        };
+
+        try {
+            const response = await fetch(API_REPARTIDORES, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoRepartidor)
+            });
+
+            if (response.ok) {
+                alert('¡Repartidor registrado con éxito en el sistema!');
+                document.getElementById('form-registrar-repartidor').reset();
+            } else {
+                const errorData = await response.json();
+                alert('Error al registrar: ' + (errorData.message || errorData.error || 'Verifica los datos'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('No se pudo conectar con la API de repartidores.');
+        }
+    }
+
+    lucide.createIcons();
+</script>
+</body>
+</html>

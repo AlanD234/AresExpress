@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Gestión de Veto de Comercios</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- SIDEBAR IZQUIERDO -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
+            <div>
+                <!-- Logo / Título -->
+                <div class="p-6">
+                    <h1 class="text-xl font-bold tracking-wide">Ares Express</h1>
+                    <p class="text-xs text-gray-400 mt-1">Admin Panel</p>
+                </div>
+
+                <!-- Menú de Navegación -->
+                <nav class="mt-4 px-4 space-y-1">
+                    <a href="Interfaz_Administrador.html" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-slate-800 rounded-xl transition-colors">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        Panel General
+                    </a>
+                    
+                    <!-- Sección Comercios Activa -->
+                    <div class="pt-2">
+                        <a href="#" class="flex items-center justify-between px-4 py-3 text-sm font-semibold text-white bg-orange-600 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="store" class="w-5 h-5"></i>
+                                Comercios
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </a>
+                        <div class="pl-11 pr-4 py-2 space-y-1 text-xs text-gray-300">
+                            <a href="Registrar_Comercio.html" class="block py-2 hover:text-white transition-colors">Registrar Comercio</a>
+                            <a href="Editar_Comercio.html" class="block py-2 hover:text-white transition-colors">Editar Comercio</a>
+                            <a href="Vetar_Comercio.html" class="block py-2 text-orange-400 font-medium">Vetar Comercio</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- CONTENEDOR PRINCIPAL -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- BARRA SUPERIOR -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                    <a href="Interfaz_Administrador.html" class="text-xs font-semibold text-gray-500 hover:text-orange-600 transition-colors flex items-center gap-1">
+                        ← Volver al Panel
+                    </a>
+                    <span class="text-gray-300">|</span>
+                    <h2 class="text-sm font-bold text-gray-800 tracking-wide uppercase" id="tituloHeader">Gestión de Comercios - Vetar Comercio</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-lg">Administrador General</span>
+                </div>
+            </header>
+
+            <!-- CONTENIDO DE LA PÁGINA -->
+            <main class="p-8 max-w-6xl mx-auto w-full space-y-6">
+                
+                <!-- 1. TARJETA DE ENCABEZADO Y BOTÓN INTERCAMBIABLE -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-red-50 text-red-600 rounded-xl" id="iconoCard">
+                            <i data-lucide="ban" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800" id="tituloCard">Comercios Registrados en Sistema</h3>
+                            <p class="text-xs text-gray-500" id="subtituloCard">Seleccione un comercio para darlo de baja permanente de la red de aliados.</p>
+                        </div>
+                    </div>
+                    <!-- Botón que alterna la vista -->
+                    <button onclick="alternarVista()" id="btnToggleVista" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors">
+                        <i data-lucide="history" class="w-4 h-4"></i> Historial de Veto
+                    </button>
+                </div>
+
+                <!-- 2. TABLA DINÁMICA -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50">
+                                <th class="p-6">Nombre Comercial</th>
+                                <th class="p-6">Categoría</th>
+                                <th class="p-6">NIT</th>
+                                <th class="p-6 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaComercios" class="divide-y divide-gray-100 text-sm text-gray-700">
+                            <!-- Los registros se cargan dinámicamente aquí -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE FUNCIONALIDAD -->
+    <script>
+        lucide.createIcons();
+
+        // Estado actual: false = Viendo Activos | true = Viendo Historial de Vetados
+        let modoHistorial = false;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await cargarDatos();
+        });
+
+        // Función para cambiar entre Activos e Historial de Veto
+        async function cargarDatos() {
+            const tituloHeader = document.getElementById('tituloHeader');
+            const tituloCard = document.getElementById('tituloCard');
+            const subtituloCard = document.getElementById('subtituloCard');
+            const btnToggleVista = document.getElementById('btnToggleVista');
+            const iconoCard = document.getElementById('iconoCard');
+
+            if (modoHistorial) {
+                // Configuración visual para Historial de Veto
+                tituloHeader.textContent = "Gestión de Comercios - Historial de Veto";
+                tituloCard.textContent = "Comercios Vetados / Dadas de Baja";
+                subtituloCard.textContent = "Historial de comercios desactivados y dados de baja del sistema.";
+                btnToggleVista.innerHTML = `<i data-lucide="store" class="w-4 h-4"></i> Ver Activos`;
+                iconoCard.className = "p-3 bg-gray-100 text-gray-600 rounded-xl";
+                
+                await cargarComerciosVetados();
+            } else {
+                // Configuración visual para Activos
+                tituloHeader.textContent = "Gestión de Comercios - Vetar Comercio";
+                tituloCard.textContent = "Comercios Registrados en Sistema";
+                subtituloCard.textContent = "Seleccione un comercio para darlo de baja permanente de la red de aliados.";
+                btnToggleVista.innerHTML = `<i data-lucide="history" class="w-4 h-4"></i> Historial de Veto`;
+                iconoCard.className = "p-3 bg-red-50 text-red-600 rounded-xl";
+                
+                await cargarComerciosActivos();
+            }
+            lucide.createIcons();
+        }
+
+        // Alternar el estado y refrescar tabla
+        function alternarVista() {
+            modoHistorial = !modoHistorial;
+            cargarDatos();
+        }
+
+        // 1. Cargar comercios activos (o todos, dependiendo de tu lógica)
+        async function cargarComerciosActivos() {
+            try {
+                const response = await fetch('http://localhost:8080/api/comercios');
+                if (response.ok) {
+                    const comercios = await response.json();
+                    const tbody = document.getElementById('tablaComercios');
+                    tbody.innerHTML = '';
+
+                    if (comercios.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-400 text-xs">No hay comercios activos registrados.</td></tr>`;
+                        return;
+                    }
+
+                    comercios.forEach(c => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50/80 transition-colors";
+                        tr.innerHTML = `
+                            <td class="p-6 font-semibold text-gray-800">${c.nombre || 'N/A'}</td>
+                            <td class="p-6">
+                                <span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-lg text-xs font-semibold">
+                                    ${c.categoria || 'General'}
+                                </span>
+                            </td>
+                            <td class="p-6 text-gray-500">${c.nit || 'CF'}</td>
+                            <td class="p-6 text-right">
+                                <button onclick="vetarComercio(${c.id}, '${c.nombre}')" class="flex items-center gap-1.5 ml-auto px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-semibold transition-colors">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i> Dar de baja
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error("Error al cargar comercios activos:", error);
+            }
+        }
+
+        // 2. Cargar comercios vetados (puedes ajustar el endpoint si manejas borrado lógico o tabla de vetados)
+        async function cargarComerciosVetados() {
+            try {
+                // Si usas borrado lógico, apunta a /api/comercios/vetados
+                // Si es eliminación física temporal, adapta tu backend o endpoint correspondiente
+                const response = await fetch('http://localhost:8080/api/comercios/vetados');
+                if (response.ok) {
+                    const comercios = await response.json();
+                    const tbody = document.getElementById('tablaComercios');
+                    tbody.innerHTML = '';
+
+                    if (comercios.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-400 text-xs">No hay comercios en el historial de veto.</td></tr>`;
+                        return;
+                    }
+
+                    comercios.forEach(c => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50/80 transition-colors";
+                        tr.innerHTML = `
+                            <td class="p-6 font-semibold text-gray-800">${c.nombre || 'N/A'}</td>
+                            <td class="p-6">
+                                <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-semibold">
+                                    ${c.categoria || 'General'}
+                                </span>
+                            </td>
+                            <td class="p-6 text-gray-500">${c.nit || 'CF'}</td>
+                            <td class="p-6 text-right">
+                                <button onclick="restaurarComercio(${c.id}, '${c.nombre}')" class="flex items-center gap-1.5 ml-auto px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl text-xs font-semibold transition-colors">
+                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Restaurar
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error("Error al cargar comercios vetados:", error);
+            }
+        }
+
+        // Acción de vetar (dar de baja)
+        async function vetarComercio(id, nombre) {
+            if (confirm(`¿Está seguro de que desea dar de baja al comercio "${nombre}"?`)) {
+                try {
+                    const response = await fetch(`http://localhost:8080/api/comercios/${id}`, {
+                        method: 'DELETE' // O PUT si manejas borrado lógico
+                    });
+
+                    if (response.ok) {
+                        alert("Comercio dado de baja exitosamente.");
+                        await cargarDatos();
+                    } else {
+                        alert("Error al dar de baja el comercio.");
+                    }
+                } catch (error) {
+                    console.error("Error de conexión:", error);
+                }
+            }
+        }
+
+        // Acción de restaurar
+        async function restaurarComercio(id, nombre) {
+            if (confirm(`¿Desea restaurar al comercio "${nombre}" a la red activa?`)) {
+                try {
+                    const response = await fetch(`http://localhost:8080/api/comercios/restaurar/${id}`, {
+                        method: 'PUT'
+                    });
+
+                    if (response.ok) {
+                        alert("Comercio restaurado exitosamente.");
+                        await cargarDatos();
+                    } else {
+                        alert("Error al restaurar el comercio.");
+                    }
+                } catch (error) {
+                    console.error("Error de conexión:", error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Express - Registro de Usuario</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-200 w-full max-w-lg p-8">
+    <!-- Icono Principal -->
+    <div class="w-16 h-16 bg-orange-50 border border-orange-200 rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#f97316]">
+        <i data-lucide="user-plus" class="w-8 h-8"></i>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-800 text-center">Crear Cuenta</h2>
+    <p class="text-sm text-gray-500 text-center mt-1 mb-6">Únete a Ares Express y realiza tus pedidos en Amatitlán</p>
+
+    <form id="formRegistro" onsubmit="registrarUsuario(event)" class="space-y-4">
+        <div>
+            <label for="nombre" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">Nombre Completo *</label>
+            <input type="text" id="nombre" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 text-sm focus:outline-none focus:border-[#f97316] focus:bg-white transition">
+        </div>
+
+        <div>
+            <label for="correo" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">Correo Electrónico *</label>
+            <input type="email" id="correo" required placeholder="correo@ejemplo.com" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 text-sm focus:outline-none focus:border-[#f97316] focus:bg-white transition">
+        </div>
+
+        <div>
+            <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">Contraseña *</label>
+            <input type="password" id="password" required placeholder="••••••••" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 text-sm focus:outline-none focus:border-[#f97316] focus:bg-white transition">
+        </div>
+
+        <!-- Campos adicionales para Facturación y Envío -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="nit" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">NIT (Opcional)</label>
+                <input type="text" id="nit" placeholder="CF o Ej. 1234567-8" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 text-sm focus:outline-none focus:border-[#f97316] focus:bg-white transition">
+            </div>
+            <div>
+                <label for="telefono" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">Teléfono *</label>
+                <input type="tel" id="telefono" required placeholder="5555-5555" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 text-sm focus:outline-none focus:border-[#f97316] focus:bg-white transition">
+            </div>
+        </div>
+
+        <div>
+            <label for="direccion" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">Dirección Habitual de Entrega *</label>
+            <input type="text" id="direccion" required placeholder="Ej. 4ta Avenida 4-74, Amatitlán" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 text-sm focus:outline-none focus:border-[#f97316] focus:bg-white transition">
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold rounded-xl shadow-md transition mt-2">
+            Registrarse
+        </button>
+    </form>
+
+    <div class="text-sm text-gray-500 text-center mt-6">
+        ¿Ya tienes una cuenta? <a href="index.html" class="text-[#f97316] font-semibold hover:underline">Inicia Sesión</a>
+    </div>
+</div>
+
+<script>
+    // Inicializar iconos de Lucide
+    lucide.createIcons();
+
+    const API_REGISTRO = 'http://localhost:8080/api/auth/registro';
+
+    async function registrarUsuario(event) {
+        event.preventDefault();
+
+        const nombre = document.getElementById('nombre').value.trim();
+        const correo = document.getElementById('correo').value.trim();
+        const password = document.getElementById('password').value;
+        const nitValor = document.getElementById('nit').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        const direccion = document.getElementById('direccion').value.trim();
+
+        // Asigna CF si el cliente no ingresó NIT
+        const nitFinal = nitValor === "" ? "CF" : nitValor;
+
+        const nuevoUsuario = {
+            nombre: nombre,
+            correo: correo,
+            password: password,
+            nit: nitFinal,
+            telefono: telefono,
+            direccionEntrega: direccion,
+            rol: "cliente",
+            activo: true
+        };
+
+        try {
+            const response = await fetch(API_REGISTRO, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(nuevoUsuario)
+            });
+
+            if (response.ok) {
+                alert('¡Registro exitoso! Ya puedes iniciar sesión con tu cuenta.');
+                window.location.href = 'index.html';
+            } else {
+                const errorData = await response.text();
+                alert('Error al registrar usuario: ' + (errorData || 'Verifique los datos ingresados.'));
+            }
+        } catch (error) {
+            console.error('Error en la petición de registro:', error);
+            alert('No se pudo conectar con el servidor backend.');
+        }
+    }
+</script>
+
+</body>
+</html>

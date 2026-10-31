@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Veto - Clientes - Ares Express</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+<!-- Sidebar unificado -->
+<aside class="w-72 bg-[#0d1527] text-white flex flex-col justify-between p-6 shadow-lg">
+    <div class="space-y-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide text-white">Ares Express</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Admin Panel</p>
+        </div>
+        <nav class="space-y-2">
+            <a href="Interfaz_Administrador.html" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Panel General</span>
+            </a>
+            <div class="space-y-1">
+                <button class="w-full flex items-center justify-between px-4 py-3 bg-[#f97316] text-white rounded-xl font-medium shadow-md transition">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        <span class="font-medium">Gestión de Clientes</span>
+                    </div>
+                </button>
+                <div class="pl-11 space-y-1 py-1">
+                    <a href="Vetar_Cliente.html" class="block py-2 text-xs text-white font-semibold transition">Vetar Cliente</a>
+                    <a href="Historial_Cliente.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Historial Cliente</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+</aside>
+
+<!-- Contenido Principal -->
+<div class="flex-1 flex flex-col">
+    <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <a href="Interfaz_Administrador.html" class="text-gray-400 hover:text-[#f97316] transition flex items-center gap-1 text-sm font-medium">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Panel
+            </a>
+            <span class="text-gray-300">|</span>
+            <h2 id="tituloHeader" class="text-lg font-semibold text-gray-800">Gestión de Clientes - Dar de Baja</h2>
+        </div>
+        <div class="text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+            Administrador General
+        </div>
+    </header>
+
+    <main class="p-8 max-w-6xl w-full mx-auto space-y-6">
+
+        <!-- Encabezado con Interruptor de Vistas (Separador) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div id="iconoContenedor" class="bg-red-50 text-red-600 p-3 rounded-2xl">
+                    <i data-lucide="user-x" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h3 id="tituloCard" class="text-xl font-bold text-gray-800">Clientes Activos en Sistema</h3>
+                    <p id="subtituloCard" class="text-sm text-gray-500 mt-0.5">Seleccione un cliente para revocar sus accesos o cambiar a la sección de vetados.</p>
+                </div>
+            </div>
+
+            <!-- Botón / Pestañas de separación estricta para no mostrar juntos -->
+            <button onclick="alternarVistaHistorial()" id="btnToggleVista" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-bold transition flex items-center space-x-2 shadow-sm whitespace-nowrap">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-red-500"></i>
+                <span id="textoBtnToggle">Ver Clientes Vetados</span>
+            </button>
+        </div>
+
+        <!-- Barra de Búsqueda Multipropósito (Nombre, Correo, ID, Teléfono) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+            <div class="relative">
+                <i data-lucide="search" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="inputBusqueda" onkeyup="filtrarClientes()" placeholder="Buscar cliente por Nombre, Correo Electrónico, ID o Teléfono..." class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#f97316]">
+            </div>
+        </div>
+
+        <!-- Tabla Dinámica -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        <th class="py-4 px-6">ID</th>
+                        <th class="py-4 px-6">Cliente</th>
+                        <th class="py-4 px-6">Correo Electrónico</th>
+                        <th class="py-4 px-6">Teléfono</th>
+                        <th class="py-4 px-6 text-center">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tablaClientesBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                    <tr><td colspan="5" class="py-8 text-center text-gray-400">Cargando clientes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const API_CLIENTES = 'http://localhost:8080/api/clientes';
+    let modoHistorial = false; // false = Activos, true = Vetados
+    let clientesCargados = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarClientes();
+    });
+
+    // Cambia completamente la vista entre Clientes Activos y Clientes Vetados
+    function alternarVistaHistorial() {
+        modoHistorial = !modoHistorial;
+        const tituloHeader = document.getElementById('tituloHeader');
+        const tituloCard = document.getElementById('tituloCard');
+        const subtituloCard = document.getElementById('subtituloCard');
+        const textoBtnToggle = document.getElementById('textoBtnToggle');
+
+        if (modoHistorial) {
+            tituloHeader.textContent = "Gestión de Clientes - Sección de Vetados";
+            tituloCard.textContent = "Clientes Vetados / Dados de Baja";
+            subtituloCard.textContent = "Listado exclusivo de clientes inactivos. Puede reactivar sus cuentas en cualquier momento.";
+            textoBtnToggle.textContent = "Ver Clientes Activos";
+        } else {
+            tituloHeader.textContent = "Gestión de Clientes - Dar de Baja";
+            tituloCard.textContent = "Clientes Activos en Sistema";
+            subtituloCard.textContent = "Seleccione un cliente para revocar sus accesos o cambiar a la sección de vetados.";
+            textoBtnToggle.textContent = "Ver Clientes Vetados";
+        }
+
+        document.getElementById('inputBusqueda').value = ''; // Limpiar búsqueda al cambiar de vista
+        renderizarTabla();
+    }
+
+    async function cargarClientes() {
+        try {
+            const response = await fetch(API_CLIENTES);
+            if (response.ok) {
+                clientesCargados = await response.json();
+                renderizarTabla();
+            } else {
+                // Datos de prueba fallback si la API aún no devuelve datos
+                clientesCargados = [];
+                renderizarTabla();
+            }
+        } catch (error) {
+            console.error('Error al obtener clientes:', error);
+        }
+    }
+
+    function renderizarTabla() {
+        const tbody = document.getElementById('tablaClientesBody');
+        const busqueda = document.getElementById('inputBusqueda').value.toLowerCase().trim();
+
+        // 1. Filtrar primero por el estado activo/inactivo (para no mezclar listas)
+        let filtrados = clientesCargados.filter(c => {
+            const estaActivo = c.activo !== false;
+            return modoHistorial ? !estaActivo : estaActivo;
+        });
+
+        // 2. Aplicar filtro de búsqueda global (Nombre, Correo, ID, Teléfono)
+        if (busqueda !== '') {
+            filtrados = filtrados.filter(c => {
+                const idMatch = c.id ? c.id.toString().includes(busqueda) : false;
+                const nombreMatch = c.nombre ? c.nombre.toLowerCase().includes(busqueda) : false;
+                const correoMatch = c.correo ? c.correo.toLowerCase().includes(busqueda) : false;
+                const telefonoMatch = c.telefono ? c.telefono.toLowerCase().includes(busqueda) : false;
+                return idMatch || nombreMatch || correoMatch || telefonoMatch;
+            });
+        }
+
+        if (filtrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400">${
+                modoHistorial ? 'No hay clientes registrados en la sección de vetados.' : 'No se encontraron clientes activos.'
+            }</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        filtrados.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50 transition";
+
+            let botonAccion = '';
+            if (!modoHistorial) {
+                botonAccion = `<button onclick="cambiarEstadoCliente(${c.id}, '${c.nombre}', false)" class="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Vetar Cliente
+                    </button>`;
+            } else {
+                botonAccion = `<button onclick="cambiarEstadoCliente(${c.id}, '${c.nombre}', true)" class="bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reactivar Cliente
+                    </button>`;
+            }
+
+            tr.innerHTML = `
+                <td class="py-4 px-6 font-bold text-gray-500">#${c.id}</td>
+                <td class="py-4 px-6 font-bold text-gray-900">${c.nombre}</td>
+                <td class="py-4 px-6 text-gray-600">${c.correo || 'Sin correo'}</td>
+                <td class="py-4 px-6 text-gray-600">${c.telefono || 'Sin teléfono'}</td>
+                <td class="py-4 px-6 text-center">${botonAccion}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        lucide.createIcons();
+    }
+
+    function filtrarClientes() {
+        renderizarTabla();
+    }
+
+    async function cambiarEstadoCliente(id, nombre, activar) {
+        const mensaje = activar ? `¿Desea reactivar la cuenta del cliente ${nombre}?` : `¿Está seguro de vetar/dar de baja al cliente ${nombre}?`;
+        if (!confirm(mensaje)) return;
+
+        try {
+            const response = await fetch(`${API_CLIENTES}/${id}/estado?activo=${activar}`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                alert(`Estado actualizado correctamente para ${nombre}.`);
+                cargarClientes(); // Recargar datos al instante
+            } else {
+                alert('No se pudo actualizar el estado del cliente en el servidor.');
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            alert('Error al conectar con la API de clientes.');
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Ares Express</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+<!-- Barra Lateral (Sidebar con Submenús Desplegables) -->
+<aside class="w-72 bg-[#0d1527] text-white flex flex-col justify-between p-6 shadow-lg">
+    <div class="space-y-6">
+        <!-- Logo / Título -->
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide text-white">Ares Express</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Admin Panel</p>
+        </div>
+
+        <!-- Menú de Navegación -->
+        <nav class="space-y-2">
+            <!-- 1. Panel General -->
+            <a href="Interfaz_Administrador.html" class="flex items-center space-x-3 px-4 py-3 bg-[#f97316] text-white rounded-xl font-medium shadow-md transition">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Panel General</span>
+            </a>
+
+            <!-- 2. Menú Desplegable: Pilotos -->
+            <div class="space-y-1">
+                <button onclick="toggleSubmenu('submenu-pilotos', 'icon-pilotos')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="truck" class="w-5 h-5"></i>
+                        <span class="font-medium">Pilotos</span>
+                    </div>
+                    <i id="icon-pilotos" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                </button>
+
+                <!-- Submenú Pilotos -->
+                <div id="submenu-pilotos" class="hidden pl-11 space-y-1 py-1">
+                    <a href="registro_repartidor.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Registrar nuevo piloto</a>
+                    <a href="Historial_Repartidores.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Historial y Estado</a>
+                </div>
+            </div>
+
+            <!-- 3. Menú Desplegable: Clientes -->
+            <div class="space-y-1">
+                <button onclick="toggleSubmenu('submenu-clientes', 'icon-clientes')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        <span class="font-medium">Clientes</span>
+                    </div>
+                    <i id="icon-clientes" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                </button>
+                <!-- Submenú Clientes -->
+                <div id="submenu-clientes" class="hidden pl-11 space-y-1 py-1">
+                    <a href="Vetar_Cliente.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Vetar Cliente</a>
+                    <a href="Historial_Cliente.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Historial Cliente</a>
+                </div>
+            </div>
+
+            <!-- 4. Menú Desplegable: Comercios -->
+            <div class="space-y-1">
+                <button onclick="toggleSubmenu('submenu-comercios', 'icon-comercios')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="store" class="w-5 h-5"></i>
+                        <span class="font-medium">Comercios</span>
+                    </div>
+                    <i id="icon-comercios" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                </button>
+                <!-- Submenú Comercios -->
+                <div id="submenu-comercios" class="hidden pl-11 space-y-1 py-1">
+                    <a href="Registrar_Comercio.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Registrar Nuevo comercio</a>
+                    <a href="Editar_Comercio.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Editar comercio</a>
+                    <a href="Menus.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Menús</a>
+                    <a href="Vetar_Comercio.html" class="block py-2 text-xs text-gray-400 hover:text-white transition">Vetar comercio</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Botón de Cerrar Sesión Abajo -->
+    <div>
+        <a href="index.html" onclick="cerrarSesionAdmin()" class="flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            <span>Cerrar Sesión</span>
+        </a>
+    </div>
+</aside>
+
+<!-- Contenido Principal -->
+<div class="flex-1 flex flex-col">
+
+    <!-- Header Superior -->
+    <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 shadow-sm">
+        <h2 class="text-lg font-semibold text-gray-800">Panel de Control y Gestión</h2>
+        <div class="flex items-center space-x-3">
+            <span id="nombre-admin" class="text-sm font-medium text-gray-700">Admin</span>
+            <div class="text-sm font-medium text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200">
+                Administrador General
+            </div>
+        </div>
+    </header>
+
+    <!-- Área de Trabajo / Botones de Acción -->
+    <main class="p-8 space-y-6">
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+
+            <div class="mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Menú de Acciones Administrativas</h3>
+                <p class="text-sm text-gray-500 mt-1">Seleccione una opción para gestionar la plataforma logística de Ares Express.</p>
+            </div>
+
+            <!-- Cuadrícula de Botones Dinámicos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- 1. Crear Nuevo Pedido -->
+                <button onclick="window.location.href='comercio.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-[#f97316] hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-orange-50 text-[#f97316] p-4 rounded-xl group-hover:bg-[#f97316] group-hover:text-white transition">
+                        <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-[#f97316] transition">Crear Nuevo Pedido</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Registrar nuevo envío en sistema</p>
+                    </div>
+                </button>
+
+                <!-- 4. Registrar Vehiculo -->
+                <button onclick="window.location.href='Registrar_Vehiculo.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-[#f97316] hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-teal-50 text-teal-600 p-4 rounded-xl group-hover:bg-teal-600 group-hover:text-white transition">
+                        <i data-lucide="truck" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-teal-600 transition">Registrar Vehículo</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Añadir unidad a la flota</p>
+                    </div>
+                </button>
+
+                <!-- 5. Editar Vehiculo -->
+                <button onclick="window.location.href='Editar_Vehiculo.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-[#f97316] hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-indigo-50 text-indigo-600 p-4 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition">
+                        <i data-lucide="edit-3" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-indigo-600 transition">Editar Vehículo</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Actualizar datos de unidad</p>
+                    </div>
+                </button>
+
+                <!-- 6. Dar de Baja Vehiculo -->
+                <button onclick="window.location.href='Vetar_Vehiculo.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-red-500 hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-red-50 text-red-500 p-4 rounded-xl group-hover:bg-red-500 group-hover:text-white transition">
+                        <i data-lucide="minus-circle" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-red-500 transition">Dar de Baja Vehículo</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Desactivar unidad de servicio</p>
+                    </div>
+                </button>
+
+                <!-- 7. Crear SUBAdmin -->
+                <button id="btn-crear-subadmin" onclick="window.location.href='Registrar_SubAdmin.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-[#f97316] hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-purple-50 text-purple-600 p-4 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition">
+                        <i data-lucide="user-plus" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-purple-600 transition">Crear SUBAdmin</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Registrar subadministrador</p>
+                    </div>
+                </button>
+
+                <!-- 8. Dar De Baja SUBAdmin -->
+                <button id="btn-vetar-subadmin" onclick="window.location.href='Vetar_SubAdmin.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-red-500 hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-red-50 text-red-500 p-4 rounded-xl group-hover:bg-red-500 group-hover:text-white transition">
+                        <i data-lucide="user-x" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-red-500 transition">Dar de Baja SUBAdmin</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Revocar permisos de acceso</p>
+                    </div>
+                </button>
+
+                <!-- 9. Editar SUBAdmin -->
+                <button id="btn-editar-subadmin" onclick="window.location.href='Editar_SubAdmin.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-[#f97316] hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-amber-50 text-amber-600 p-4 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition">
+                        <i data-lucide="user-cog" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-amber-600 transition">Editar SUBAdmin</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Modificar rol y permisos</p>
+                    </div>
+                </button>
+
+                <!-- 10. Informacion Financiera -->
+                <button onclick="window.location.href='Informacion_Financiera.html'" class="flex items-center p-5 bg-white border border-gray-200 hover:border-green-600 hover:shadow-md rounded-2xl transition group text-left">
+                    <div class="bg-green-50 text-green-600 p-4 rounded-xl group-hover:bg-green-600 group-hover:text-white transition">
+                        <i data-lucide="trending-up" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800 group-hover:text-green-600 transition">Información Financiera</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Reportes de ingresos y costos</p>
+                    </div>
+                </button>
+
+            </div>
+
+        </div>
+
+    </main>
+</div>
+
+<!-- Script de control de acceso por rol, ocultación de botones y submenús -->
+<script>
+    const rolActual = localStorage.getItem('rol');
+    const nombreAdmin = localStorage.getItem('nombre');
+
+    if (!rolActual || (rolActual.toLowerCase() !== 'admin' && rolActual.toLowerCase() !== 'subadmin')) {
+        alert('Acceso denegado. Se requieren privilegios de Administrador.');
+        window.location.href = 'index.html';
+    } else {
+        if (nombreAdmin) {
+            document.getElementById('nombre-admin').innerText = nombreAdmin;
+        }
+
+        if (rolActual.toLowerCase() === 'subadmin') {
+            const etiquetaRol = document.querySelector('header .bg-orange-50');
+            if (etiquetaRol) {
+                etiquetaRol.innerText = 'SubAdministrador';
+            }
+
+            const btnCrear = document.getElementById('btn-crear-subadmin');
+            const btnVetar = document.getElementById('btn-vetar-subadmin');
+            const btnEditar = document.getElementById('btn-editar-subadmin');
+
+            if (btnCrear) btnCrear.style.display = 'none';
+            if (btnVetar) btnVetar.style.display = 'none';
+            if (btnEditar) btnEditar.style.display = 'none';
+        }
+    }
+
+    lucide.createIcons();
+
+    function toggleSubmenu(submenuId, iconId) {
+        const submenu = document.getElementById(submenuId);
+        const icon = document.getElementById(iconId);
+
+        submenu.classList.toggle('hidden');
+
+        if (submenu.classList.contains('hidden')) {
+            icon.style.transform = 'rotate(0deg)';
+        } else {
+            icon.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    function cerrarSesionAdmin() {
+        localStorage.clear();
+    }
+</script>
+</body>
+</html>

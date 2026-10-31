@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información Financiera - Ares Express</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<div class="flex h-screen overflow-hidden">
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+
+        <!-- Cabecera de la sección -->
+        <header class="bg-white border-b border-gray-200 px-8 py-6">
+            <h1 class="text-2xl font-bold text-gray-800">Información Financiera</h1>
+            <p class="text-sm text-gray-500 mt-1">Reportes de ingresos, costos y filtrado de facturación por rangos de fecha.</p>
+        </header>
+
+        <!-- Contenido y Filtro por Calendario -->
+        <div class="p-8">
+
+            <!-- Tarjeta de Filtros por Fechas -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-8">
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+
+                    <!-- Selección de Fecha Inicio y Fin -->
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Fecha de Inicio</label>
+                            <input type="date" id="fechaInicio" class="px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Fecha de Fin</label>
+                            <input type="date" id="fechaFin" class="px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+
+                        <!-- Botón de Filtrar -->
+                        <button onclick="filtrarFacturas()" class="mt-4 md:mt-0 px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-sm flex items-center gap-2">
+                            <i data-lucide="filter" class="w-4 h-4"></i>
+                            Filtrar Reporte
+                        </button>
+                    </div>
+
+                    <!-- Acciones secundarias (Ej. Exportar) -->
+                    <div>
+                        <button onclick="exportarReporte()" class="px-4 py-2.5 border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium rounded-xl transition flex items-center gap-2 text-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Exportar PDF/Excel
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Contenedor de Resultados / Tabla de Facturas -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800">Facturas Registradas</h3>
+                    <span class="text-xs bg-orange-50 text-orange-600 font-semibold px-3 py-1 rounded-full">Mostrando todos los registros</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                        <tr class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200">
+                            <th class="px-6 py-3">ID Factura</th>
+                            <th class="px-6 py-3">Cliente / Comercio</th>
+                            <th class="px-6 py-3">Fecha</th>
+                            <th class="px-6 py-3">Monto Total</th>
+                            <th class="px-6 py-3">Estado</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tablaFacturasBody" class="divide-y divide-gray-200 text-sm text-gray-700">
+                        <!-- Ejemplo de fila estática para diseño -->
+                        <tr>
+                            <td class="px-6 py-4 font-medium text-gray-900">#FAC-001</td>
+                            <td class="px-6 py-4">Comercio Ejemplo S.A.</td>
+                            <td class="px-6 py-4">2026-10-24</td>
+                            <td class="px-6 py-4 font-semibold text-gray-900">Q 1,250.00</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 text-xs font-medium bg-green-50 text-green-600 rounded-lg">Completada</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Scripts de la Interfaz -->
+<script>
+    lucide.createIcons();
+
+    function filtrarFacturas() {
+        const inicio = document.getElementById('fechaInicio').value;
+        const fin = document.getElementById('fechaFin').value;
+
+        console.log(`Filtrando facturas desde ${inicio} hasta ${fin}`);
+        // Aquí posteriormente conectaremos el fetch hacia tu controlador backend para traer las facturas por fecha.
+        alert(`Filtro aplicado del ${inicio || 'inicio'} al ${fin || 'hoy'}`);
+    }
+
+    function exportarReporte() {
+        alert("Función de exportación lista para programar.");
+    }
+</script>
+</body>
+</html>
